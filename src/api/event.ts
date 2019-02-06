@@ -39,6 +39,25 @@ export class Event {
 
     this.duration = moment.duration(this.end.diff(this.start));
   }
+
+  public getIEvent(): IEvent {
+    const day = (this.start.hours() <= 3) ? this.start.clone().subtract(1, 'd').format('YYYY-MM-DD')
+      : this.start.format('YYYY-MM-DD');
+    return {
+      title: this.title, room: this.room, icon: this.icon,
+      id: this.id, schedId: this.schedId, organizer: this.organizer,
+      desc: this.desc, hideAgenda: this.hideAgenda,
+      day, startTime: this.start.format('h:mm A'),
+      endTime: this.end.format('h:mm A'),
+    };
+  }
+
+  public async save() {
+    await fetch(process.env.VUE_APP_BACKEND_HOST + `/events/${this.id}`, {
+      method: 'PUT',
+      body: JSON.stringify(this.getIEvent()),
+    });
+  }
 }
 
 function eventSort(a: Event, b: Event): number {
@@ -49,6 +68,11 @@ function eventSort(a: Event, b: Event): number {
 }
 
 export default {
+  async delEvent(id: number): Promise<void> {
+    await fetch(process.env.VUE_APP_BACKEND_HOST + `/events/${id}`, {
+      method: 'DELETE',
+    });
+  },
   async getEvents(schedId: number): Promise<Event[]> {
     const resp = await fetch(process.env.VUE_APP_BACKEND_HOST + `/scheds/${schedId}/events`);
     const events = await resp.json();

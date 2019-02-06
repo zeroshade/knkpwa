@@ -32,7 +32,8 @@
 <script lang='ts'>
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { Schedule } from '@/api/schedule';
-import { Getter, Action } from 'vuex-class';
+import { Action } from 'vuex-class';
+import { Event } from '@/api/event';
 import colors from 'vuetify/es5/util/colors';
 
 function camelCaseToDash(str: string): string {
@@ -48,7 +49,8 @@ function camelCaseToDash(str: string): string {
 
 @Component
 export default class AdminScheduleHome extends Vue {
-  @Getter('admin/sched') public schedule!: Schedule;
+  @Prop(Object) public schedule!: Schedule;
+  @Prop(Array) public events!: Event[];
   @Action('admin/updateSchedule') public updateSchedule!: (s: Schedule) => Promise<void>;
 
   public primary = '';
@@ -73,7 +75,7 @@ export default class AdminScheduleHome extends Vue {
   }
 
   public get rooms(): string[] {
-    const rooms = new Set(this.schedule.events.map((e) => e.room));
+    const rooms = new Set(this.events.map((e) => e.room));
     const ret = Array.from(rooms).sort();
     ret.push('other');
     return ret;

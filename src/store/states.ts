@@ -2,6 +2,11 @@ import { Auth0UserProfile } from 'auth0-js';
 import { Schedule } from '@/api/schedule';
 import { Event } from '@/api/event';
 
+export interface AdminState {
+  schedule: Schedule | null;
+  events: Event[];
+}
+
 export interface AuthState {
   authenticated: boolean;
   accessToken: string | null;

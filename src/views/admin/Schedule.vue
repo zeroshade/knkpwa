@@ -1,6 +1,6 @@
 <template>
   <v-container fluid>
-    <v-layout align-top justify-left>
+    <v-layout align-top justify-left class='mb-3'>
       <v-flex xs5>
         <v-card dark>
           <v-card-text v-if='sched'>
@@ -18,7 +18,7 @@
         </v-card>
       </v-flex>
     </v-layout>
-    <router-view />
+    <router-view :schedule='sched' :events='events' />
   </v-container>
 </template>
 
@@ -26,12 +26,14 @@
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { Action, Getter } from 'vuex-class';
 import { Schedule } from '@/api/schedule';
+import { Event } from '@/api/event';
 
 @Component
 export default class AdminSchedule extends Vue {
   @Prop(Number) public id!: number;
   @Action('admin/loadSchedById') public loadsched!: (id: number) => Promise<void>;
   @Getter('admin/sched') public sched!: Schedule | null;
+  @Getter('admin/events') public events!: Event[];
 
   public async created() {
     await this.loadsched(this.id);

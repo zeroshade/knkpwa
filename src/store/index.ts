@@ -2,46 +2,16 @@ import Vue from 'vue';
 import Vuex, { StoreOptions } from 'vuex';
 import { RootState } from './states';
 import authModule from './authmod';
+import adminModule from './admin';
 import sched, { Schedule } from '@/api/schedule';
 import { Event } from '@/api/event';
 
 Vue.use(Vuex);
 
-interface AdminState {
-  schedule: Schedule | null;
-}
-
 export default new Vuex.Store<RootState>({
   modules: {
     auth: authModule,
-    admin: {
-      namespaced: true,
-      state: {
-        schedule: null,
-      },
-      getters: {
-        sched(state) {
-          return state.schedule;
-        },
-      },
-      mutations: {
-        setSched(state, payload) {
-          state.schedule = payload;
-          state.schedule.loadEvents();
-        },
-      },
-      actions: {
-        async loadSchedById({ commit }, payload) {
-          const s = await sched.getSchedule(payload);
-          await s.loadEvents();
-          commit('setSched', s);
-        },
-        async updateSchedule({ commit }, payload) {
-          commit('setSched', payload);
-          await payload.save();
-        },
-      },
-    },
+    admin: adminModule,
   },
   state: {
     schedules: [],

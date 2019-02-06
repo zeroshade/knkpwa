@@ -15,6 +15,9 @@ const authModule: Module<AuthState, RootState> = {
     user: JSON.parse(localStorage.getItem('user') || '{}'),
   },
   getters: {
+    accessToken(state: AuthState): string {
+      return state.accessToken || '';
+    },
     authenticated(state: AuthState): boolean {
       return state.authenticated && new Date().getTime() < state.expiresAt;
     },

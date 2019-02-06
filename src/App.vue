@@ -2,7 +2,7 @@
   <v-app dark id='schedule'>
     <router-view name='navbar' v-model='drawer' />
     <router-view name='toolbar' v-model='drawer' />
-    <v-content :class='$route.path.match(/\/admin/) === null ? "amber darken-4" : ""'>
+    <v-content fill-height :class='$route.path.match(/\/admin/) === null ? "amber darken-4" : ""'>
       <router-view />
       <event-dialog :width='500' />
     </v-content>
@@ -15,7 +15,7 @@
 <script lang='ts'>
 import { Component, Watch, Vue } from 'vue-property-decorator';
 import EventDialog from '@/components/EventDialog.vue';
-import { Getter, State, Action } from 'vuex-class';
+import { Getter, Action } from 'vuex-class';
 import { Route } from 'vue-router';
 
 
@@ -26,7 +26,7 @@ import { Route } from 'vue-router';
 })
 export default class Layout extends Vue {
   @Action('fetchScheds') public fetchScheds!: () => Promise<void>;
-  @State('auth/accessToken') public accessToken!: string;
+  @Getter('auth/accessToken') public accessToken!: string;
   @Getter('auth/admin') public isAdmin!: boolean;
 
   public drawer = null;

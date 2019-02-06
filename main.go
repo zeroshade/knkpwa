@@ -25,6 +25,12 @@ const (
 	vapidPrivateKey = "7-axl4mKWJC81o6vLAzKZoDiEeSOAdRjx3OXdLmS9h0"
 )
 
+var loc *time.Location
+
+func init() {
+	loc, _ = time.LoadLocation("America/New_York")
+}
+
 type Schedule struct {
 	ID       uint       `json:"id"`
 	Title    string     `json:"title" gorm:"type:varchar(50)"`
@@ -86,8 +92,8 @@ func (s *Schedule) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	s.DayStart, err = time.Parse("2006-01-02", aux.DayStart)
-	s.DayEnd, err = time.Parse("2006-01-02", aux.DayEnd)
+	s.DayStart, err = time.ParseInLocation("2006-01-02", aux.DayStart, loc)
+	s.DayEnd, err = time.ParseInLocation("2006-01-02", aux.DayEnd, loc)
 	for k, v := range aux.ColorMap {
 		s.ColorMap = append(s.ColorMap, ColorMap{Room: k, Color: v, SchedID: aux.ID})
 	}
@@ -110,6 +116,24 @@ func (e *Event) MarshalJSON() ([]byte, error) {
 		Day:   e.Day.Format("2006-01-02"),
 		Alias: (*Alias)(e),
 	})
+}
+
+func (e *Event) UnmarshalJSON(data []byte) error {
+	type Alias Event
+	aux := &struct {
+		Day string `json:"day"`
+		*Alias
+	}{
+		Alias: (*Alias)(e),
+	}
+
+	err := json.Unmarshal(data, &aux)
+	if err != nil {
+		return err
+	}
+
+	e.Day, err = time.ParseInLocation("2006-01-02", aux.Day, loc)
+	return err
 }
 
 func (Event) TableName() string {
@@ -208,6 +232,18 @@ func main() {
 		db.Debug().Find(&events, "sched_id = ?", c.Param("id"))
 
 		c.JSON(http.StatusOK, events)
+	})
+
+	router.PUT("/events/:id", func(c *gin.Context) {
+		var ev Event
+		c.BindJSON(&ev)
+		db.Save(&ev)
+		c.Status(http.StatusOK)
+	})
+
+	router.DELETE("/events/:id", func(c *gin.Context) {
+		db.Delete(Event{}, "id = ?", c.Param("id"))
+		c.Status(http.StatusOK)
 	})
 
 	router.PUT("/sub", checkJWT(), func(c *gin.Context) {
