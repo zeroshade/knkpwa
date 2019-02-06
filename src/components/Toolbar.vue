@@ -106,6 +106,8 @@ export default class Toolbar extends Vue {
   }
 
   public async mounted() {
+    if (!navigator.serviceWorker) { return; }
+
     this.swReg = await navigator.serviceWorker.getRegistration() || null;
     if (!this.swReg) { return; }
 

@@ -201,7 +201,7 @@ func main() {
 
 	config := cors.DefaultConfig()
 	config.AllowHeaders = append(config.AllowHeaders, "Authorization")
-	config.AllowOrigins = []string{"http://localhost:8080", "http://localhost:8090"}
+	config.AllowOrigins = []string{"http://localhost:8080", "http://localhost:8090", "http://fxdeva16.factset.com:8090"}
 
 	router := gin.New()
 	router.Use(gin.Logger())
@@ -229,7 +229,7 @@ func main() {
 
 	router.GET("/scheds/:id/events", func(c *gin.Context) {
 		var events []Event
-		db.Debug().Find(&events, "sched_id = ?", c.Param("id"))
+		db.Find(&events, "sched_id = ?", c.Param("id"))
 
 		c.JSON(http.StatusOK, events)
 	})
