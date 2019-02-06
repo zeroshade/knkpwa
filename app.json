@@ -1,0 +1,23 @@
+{
+  "name": "KnK Schedule",
+  "description": "Schedule App for KnK",
+  "website": "http://knksched.herokuapp.com",
+  "repository": "https://github.com/zeroshade/knkpwa",
+  "env": {
+    "DB_NAME": "thelazydm",
+    "DB_USER": "lazydm",
+    "DB_HOST": "sql.thelazydm.org",
+    "DB_PASS": {
+      "description": "Password for the database",
+      "required": true
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    },
+    {
+      "url": "heroku/go"
+    }
+  ]
+}
