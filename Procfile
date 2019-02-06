@@ -1,1 +1,1 @@
-web: ./knkpwa
+web: ./bin/knkpwa
