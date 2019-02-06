@@ -1,3 +1,5 @@
+// +heroku goVersion go1.11
+// +heroku install ./knkpwa/...
 module github.com/zeroshade/knkpwa
 
 require (
