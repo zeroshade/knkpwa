@@ -2,6 +2,11 @@
   "name": "pwa",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "^10.7.0",
+    "npm": "^6.4.1",
+    "yarn": "^1.13.0"
+  },
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
