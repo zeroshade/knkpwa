@@ -33,6 +33,7 @@
     "@vue/cli-plugin-pwa": "^3.0.1",
     "@vue/cli-plugin-typescript": "^3.0.1",
     "@vue/cli-service": "^3.0.1",
+    "compression-webpack-plugin": "^2.0.0",
     "moment-locales-webpack-plugin": "^1.0.7",
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.2",

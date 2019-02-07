@@ -1,6 +1,7 @@
 const WebpackPwaManifest = require('webpack-pwa-manifest');
 const path = require('path');
 const MomentLocalesPlugin = require('moment-locales-webpack-plugin');
+const CompressionPlugin = require('compression-webpack-plugin');
 
 module.exports = {
   configureWebpack: {
@@ -20,6 +21,12 @@ module.exports = {
             sizes: [96, 128, 256, 384, 512],
             destination: path.join('img', 'icons')
           }
+        ]
+      }),
+      new CompressionPlugin({
+        test: [
+          /\.js(\?.*)?$/i,
+          /\.css(\?.*)?$/i
         ]
       })
     ]
