@@ -4,10 +4,6 @@ import (
 	"bytes"
 	"compress/gzip"
 	"fmt"
-<<<<<<< Updated upstream
-=======
-	"log"
->>>>>>> Stashed changes
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
@@ -18,17 +14,10 @@ import (
 )
 
 const (
-<<<<<<< Updated upstream
 	BestCompression    = gzip.BestCompression
 	BestSpeed          = gzip.BestSpeed
 	DefaultCompression = gzip.DefaultCompression
 	NoCompression      = gzip.NoCompression
-=======
-	BestCompression = gzip.BestCompression
-	BestSpeed = gzip.BestSpeed
-	DefaultCompression = gzip.DefaultCompression
-	NoCompression = gzip.NoCompression
->>>>>>> Stashed changes
 )
 
 func Gzip(level, minLength int) gin.HandlerFunc {
@@ -51,13 +40,8 @@ func Gzip(level, minLength int) gin.HandlerFunc {
 
 		gzWriter := &gzipWriter{
 			ResponseWriter: c.Writer,
-<<<<<<< Updated upstream
 			writer:         gz,
 			minLength:      minLength,
-=======
-			writer: gz,
-			minLength: minLength,
->>>>>>> Stashed changes
 		}
 
 		c.Writer = gzWriter
@@ -76,17 +60,10 @@ func Gzip(level, minLength int) gin.HandlerFunc {
 
 type gzipWriter struct {
 	gin.ResponseWriter
-<<<<<<< Updated upstream
 	writer    *gzip.Writer
 	buffer    bytes.Buffer
 	minLength int
 	compress  bool
-=======
-	writer *gzip.Writer
-	buffer bytes.Buffer
-	minLength int
-	compress bool
->>>>>>> Stashed changes
 }
 
 func (g *gzipWriter) WriteString(s string) (int, error) {
@@ -117,10 +94,6 @@ func (g *gzipWriter) Write(data []byte) (w int, err error) {
 	return
 }
 
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
 func (g *gzipWriter) WriteHeader(code int) {
 	g.Header().Del("Content-Length")
 	g.ResponseWriter.WriteHeader(code)
