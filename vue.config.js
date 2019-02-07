@@ -12,12 +12,12 @@ module.exports = {
         inject: true,
         short_name: 'KnK',
         background_color: '#0E8DF1',
-        themeColor: '#F68043',
+        theme_color: '#F68043',
         start_url: '/',
         icons: [
           {
             src: path.resolve('src/assets/logo.png'),
-            sizes: [96, 128, 256, 384],
+            sizes: [96, 128, 256, 384, 512],
             destination: path.join('img', 'icons')
           }
         ]

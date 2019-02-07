@@ -5,8 +5,8 @@ const Agenda = () => import(/* webpackChunkName: "group-app" */ '@/views/Agenda.
 const Events = () => import(/* webpackChunkName: "group-app" */ '@/views/Events.vue');
 const EventDialog = () => import(/* webpackChunkName: "group-app" */ '@/components/EventDialog.vue');
 const Auth = () => import(/* webpackChunkName: "group-auth" */ '@/views/Auth.vue');
-const NavBar = () => import(/* webpackChunkName: "group-base" */ '@/components/NavBar.vue');
-const Toolbar = () => import(/* webpackChunkName: "group-base" */ '@/components/Toolbar.vue');
+import NavBar from '@/components/NavBar.vue';
+import ToolBar from '@/components/Toolbar.vue';
 const AdminNav = () => import(/* webpackChunkName: "group-admin" */ '@/components/admin/NavDrawer.vue');
 const AdminToolbar = () => import(/* webpackChunkName: "group-admin" */ '@/components/admin/Toolbar.vue');
 const AdminSchedule = () => import(/* webpackChunkName: "group-admin" */ '@/views/admin/Schedule.vue');

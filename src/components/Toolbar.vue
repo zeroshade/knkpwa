@@ -1,6 +1,6 @@
 <template>
   <v-toolbar dense tabs color='orange' app>
-    <v-toolbar-side-icon @click.stop='$emit("input", !value)'>
+    <v-toolbar-side-icon aria-label='menu' @click.stop='$emit("input", !value)'>
       <v-icon>menu</v-icon>
     </v-toolbar-side-icon>
     <v-toolbar-title>Kith &amp; Kink Schedule</v-toolbar-title>

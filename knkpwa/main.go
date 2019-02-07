@@ -25,6 +25,21 @@ func init() {
 	loc, _ = time.LoadLocation("America/New_York")
 }
 
+func ServeFile(urlPrefix, root string) gin.HandlerFunc {
+	fs := static.LocalFile(root, false)
+	fileserver := http.FileServer(fs)
+	if urlPrefix != "" {
+		fileserver = http.StripPrefix(urlPrefix, fileserver)
+	}
+	return func(c *gin.Context) {
+		if fs.Exists(urlPrefix, c.Request.URL.Path) {
+			c.Header("Cache-Control", "public, max-age=31536000")
+			fileserver.ServeHTTP(c.Writer, c.Request)
+			c.Abort()
+		}
+	}
+}
+
 type Notify struct {
 	UserID  string `json:"userId" binding:"required"`
 	Message string `json:"message" binding:"required"`
@@ -176,7 +191,7 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"text": "howdy"})
 	})
 
-	router.Use(static.ServeRoot("/", "./dist"))
+	router.Use(ServeFile("/", "./dist"))
 	router.NoRoute(func(c *gin.Context) {
 		_, file := path.Split(c.Request.RequestURI)
 		ext := filepath.Ext(file)
