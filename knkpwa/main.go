@@ -205,9 +205,9 @@ func main() {
 	router.Use(cors.New(config))
 
 	router.Use(func(c *gin.Context) {
-		host := c.GetHeader("host")
+		host := c.Request.Host
 		proto := c.GetHeader("x-forwarded-proto")
-		if host != "localhost" && proto != "https" {
+		if host != "localhost:8090" && proto != "https" {
 			c.Redirect(http.StatusMovedPermanently, "https://"+host+c.Request.URL.RequestURI())
 			return
 		}
