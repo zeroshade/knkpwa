@@ -1,61 +1,42 @@
 const WebpackPwaManifest = require('webpack-pwa-manifest');
 const path = require('path');
 const MomentLocalesPlugin = require('moment-locales-webpack-plugin');
-const PreloadPlugin = require('@vue/preload-webpack-plugin');
 
 module.exports = {
   configureWebpack: {
     plugins: [
       new MomentLocalesPlugin(),
+      new WebpackPwaManifest({
+        name: 'KnK Schedule',
+        fingerprints: false,
+        inject: true,
+        short_name: 'KnK',
+        background_color: '#0E8DF1',
+        theme_color: '#F68043',
+        start_url: '/',
+        icons: [
+          {
+            src: path.resolve('src/assets/logo.png'),
+            sizes: [96, 128, 256, 384, 512],
+            destination: path.join('img', 'icons')
+          }
+        ]
+      })
     ]
   },
   chainWebpack: config => {
     config
-      .plugin('pwa-manifest')
-      .use(WebpackPwaManifest, [
-        {
-          name: 'KnK Schedule',
-          fingerprints: false,
-          inject: true,
-          short_name: 'KnK',
-          background_color: '#0E8DF1',
-          theme_color: '#F68043',
-          start_url: '/',
-          icons: [
-            {
-              src: path.resolve('src/assets/logo.png'),
-              sizes: [96, 128, 256, 384, 512],
-              destination: path.join('img', 'icons')
-            }
-          ]
-        }
-      ]);
-
-    if (!(process.env.VUE_CLI_MODERN_MODE && !process.env.VUE_CLI_MODERN_BUILD)) {
-      config
-        .plugin('preload-app')
-        .use(PreloadPlugin, [
-          {
-            rel: 'preload',
-            includeHtmlNames: [
-              'index.html'
-            ],
-            include: {
-              chunks: [ 'group-room' ],
-              entries: [
-                'index'
-              ]
-            }
-          }
-        ]);
-
-      config
-        .plugin('preload-admin')
-        .tap(args => {
-          args[0].include.chunks = ['group-admin'];
-          return args;
-        });
-    }
+      .plugin('preload-index')
+      .tap(args => {
+        args[0].include.entries.push('group-app');
+        return args;
+      });
+    config
+      .plugin('preload-admin')
+      .tap(args => {
+        args[0].include.entries.push('group-admin');
+        return args;
+      })
   },
   pages: {
     index: {

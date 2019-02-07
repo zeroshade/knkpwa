@@ -1,6 +1,10 @@
 import Vue from 'vue';
 import Router, { Route } from 'vue-router';
-import EventDialog from '@/components/EventDialog.vue';
+const RoomGrid = () => import(/* webpackChunkName: "group-room", webpackPreload:true */ '@/views/RoomGrid.vue');
+const Agenda = () => import(/* webpackChunkName: "group-app" */ '@/views/Agenda.vue');
+const Events = () => import(/* webpackChunkName: "group-app" */ '@/views/Events.vue');
+const EventDialog = () => import(/* webpackChunkName: "group-app" */ '@/components/EventDialog.vue');
+const Auth = () => import(/* webpackChunkName: "group-auth" */ '@/views/Auth.vue');
 import NavBar from '@/components/NavBar.vue';
 import Toolbar from '@/components/Toolbar.vue';
 Vue.use(Router);
@@ -19,26 +23,26 @@ export default new Router({
     {
       path: '/rooms', name: 'home',
       components: {
-        default: () => import(/* webpackChunkName: "group-room", webpackPreload: true */ '@/views/RoomGrid.vue'),
+        default: RoomGrid,
         ...baseNavToolbar,
       },
     },
     {
       path: '/agenda', name: 'agenda',
       components: {
-        default: () => import(/* webpackChunkName: "group-agenda" */ '@/views/Agenda.vue'),
+        default: Agenda,
         ...baseNavToolbar,
       },
     },
     {
       path: '/events', name: 'events',
       components: {
-        default: () => import(/* webpackChunkName: "group-events" */ '@/views/Events.vue'),
+        default: Events,
         ...baseNavToolbar,
       },
     },
     {
-      path: '/callback', component: () => import(/* webpackChunkName: "group-auth" */ '@/views/Auth.vue'), name: 'auth',
+      path: '/callback', component: Auth, name: 'auth',
     },
     // {
     //   path: '/about',
