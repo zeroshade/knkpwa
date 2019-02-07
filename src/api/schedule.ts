@@ -78,13 +78,6 @@ export class Schedule {
     if (this.events.length !== 0) { return; }
     this.events = await event.getEvents(this.id);
   }
-
-  public async save(): Promise<void> {
-    await fetch(process.env.VUE_APP_BACKEND_HOST + `/scheds/${this.id}`, {
-      method: 'PUT',
-      body: JSON.stringify(this.getISched()),
-    });
-  }
 }
 
 export default {

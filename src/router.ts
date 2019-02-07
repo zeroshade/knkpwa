@@ -3,6 +3,7 @@ import Router, { Route } from 'vue-router';
 const RoomGrid = () => import(/* webpackChunkName: "group-app" */ '@/views/RoomGrid.vue');
 const Agenda = () => import(/* webpackChunkName: "group-app" */ '@/views/Agenda.vue');
 const Events = () => import(/* webpackChunkName: "group-app" */ '@/views/Events.vue');
+const EventDialog = () => import(/* webpackChunkName: "group-app" */ '@/components/EventDialog.vue');
 const Auth = () => import(/* webpackChunkName: "group-auth" */ '@/views/Auth.vue');
 const NavBar = () => import(/* webpackChunkName: "group-base" */ '@/components/NavBar.vue');
 const Toolbar = () => import(/* webpackChunkName: "group-base" */ '@/components/Toolbar.vue');
@@ -14,6 +15,12 @@ Vue.use(Router);
 const baseNavToolbar = {
   navbar: NavBar,
   toolbar: Toolbar,
+  dialog: EventDialog,
+};
+
+const adminNavToolbar = {
+  navbar: AdminNav,
+  toolbar: AdminToolbar,
 };
 
 export default new Router({
@@ -45,15 +52,13 @@ export default new Router({
     {
       path: '/admin', name: 'admin',
       components: {
-        navbar: AdminNav,
-        toolbar: AdminToolbar,
+        ...adminNavToolbar,
       },
     },
     {
       path: '/admin/:id',
       components: {
-        navbar: AdminNav,
-        toolbar: AdminToolbar,
+        ...adminNavToolbar,
         default: AdminSchedule,
       },
       props: {

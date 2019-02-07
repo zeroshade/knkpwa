@@ -1,9 +1,11 @@
-var WebpackPwaManifest = require('webpack-pwa-manifest');
-var path = require('path');
+const WebpackPwaManifest = require('webpack-pwa-manifest');
+const path = require('path');
+const MomentLocalesPlugin = require('moment-locales-webpack-plugin');
 
 module.exports = {
   configureWebpack: {
     plugins: [
+      new MomentLocalesPlugin(),
       new WebpackPwaManifest({
         name: 'KnK Schedule',
         fingerprints: false,

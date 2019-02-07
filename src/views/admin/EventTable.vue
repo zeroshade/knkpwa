@@ -58,6 +58,11 @@
           </v-btn>
         </td>
       </template>
+      <template slot='footer'>
+        <td align='right' :colspan='headers.length'>
+          <v-btn @click.native='newEdit()'>New Event</v-btn>
+        </td>
+      </template>
     </v-data-table>
     <v-dialog v-model='confirmDialog' persistent max-width='300'>
       <v-card>
@@ -137,8 +142,9 @@
           <v-divider />
           <v-card-actions>
             <v-spacer />
-            <v-btn color='warning' flat @click.native=''>Close</v-btn>
-            <v-btn color='success' :disabled='!this.valid' flat @click.native=''>Save</v-btn>
+            <v-btn color='warning' flat @click.native='editDialog = false; toEdit = null;'>Cancel</v-btn>
+            <v-btn color='success' :disabled='!this.valid'
+              flat @click.native='updateEv(toEdit); editDialog = false; toEdit = null;'>Save</v-btn>
           </v-card-actions>
         </v-card>
       </v-form>
@@ -194,6 +200,15 @@ export default class EventTable extends Vue {
     {text: 'Icon', value: 'icon', sortable: false},
     {text: '', sortable: false},
   ];
+
+  public newEdit() {
+    this.toEdit = new Event({
+      title: '', room: '', id: 0, schedId: this.schedule.id,
+      organizer: '', day: this.daySelect[0].format('YYYY-MM-DD'),
+      startTime: '12:00 pm', endTime: '12:00 pm',
+    });
+    this.editDialog = true;
+  }
 
   public openEdit(item: Event) {
     this.toEdit = new Event(item.getIEvent());

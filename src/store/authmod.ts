@@ -112,6 +112,17 @@ const authModule: Module<AuthState, RootState> = {
         console.log(err);
       });
     },
+    async makeAuthedRequest({ state }, payload: {path: string, method: string, body?: object}) {
+      if (!state.user) { return; }
+
+      await fetch(process.env.VUE_APP_BACKEND_HOST + payload.path, {
+        method: payload.method,
+        body: payload.body ? JSON.stringify(payload.body) : undefined,
+        headers: {
+          Authorization: `Bearer ${state.accessToken}`,
+        },
+      });
+    },
     async updateSubscription({ state }, sub: PushSubscription) {
       if (!state.user) { return; }
 

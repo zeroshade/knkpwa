@@ -4,7 +4,7 @@
     <router-view name='toolbar' v-model='drawer' />
     <v-content fill-height :class='$route.path.match(/\/admin/) === null ? "amber darken-4" : ""'>
       <router-view />
-      <event-dialog :width='500' />
+      <router-view name='dialog' :width='500' />
     </v-content>
     <v-footer app>
       <span>&copy; 2018</span>
@@ -14,16 +14,11 @@
 
 <script lang='ts'>
 import { Component, Watch, Vue } from 'vue-property-decorator';
-import EventDialog from '@/components/EventDialog.vue';
 import { Getter, Action } from 'vuex-class';
 import { Route } from 'vue-router';
 
 
-@Component({
-  components: {
-    EventDialog,
-  },
-})
+@Component
 export default class Layout extends Vue {
   @Action('fetchScheds') public fetchScheds!: () => Promise<void>;
   @Getter('auth/accessToken') public accessToken!: string;
@@ -55,16 +50,6 @@ export default class Layout extends Vue {
         message: 'Super Test Notification!',
       }),
     });
-  }
-
-  public async testreq() {
-    const resp = await fetch('http://localhost:8090/test', {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-      },
-    });
-    console.log(await resp.json());
   }
 }
 </script>

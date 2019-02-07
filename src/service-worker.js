@@ -54,6 +54,7 @@ self.addEventListener('push', event => {
 
   const options = {
     body: body,
+    icon: 'img/icons/icon_256x256.png',
     data: {
       dateOfArrival: Date.now(),
       primaryKey: 1,

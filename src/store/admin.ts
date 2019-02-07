@@ -26,7 +26,11 @@ const adminModule: Module<AdminState, RootState> = {
     },
     updateEvent(state: AdminState, payload: Event) {
       const idx = state.events.findIndex((e) => e.id === payload.id);
-      state.events.splice(idx, 1, payload);
+      if (idx !== -1) {
+        state.events.splice(idx, 1, payload);
+      } else {
+        state.events.push(payload);
+      }
     },
     removeEvent(state: AdminState, id: number) {
       const idx = state.events.findIndex((e) => e.id === id);
@@ -40,17 +44,34 @@ const adminModule: Module<AdminState, RootState> = {
       const e = await event.getEvents(id);
       commit('setEvents', e);
     },
-    async updateSchedule({ commit }, payload: Schedule) {
+    async updateSchedule({ commit, dispatch }, payload: Schedule) {
       commit('setSched', payload);
-      await payload.save();
+      await dispatch('auth/makeAuthedRequest', {
+        path: `/scheds/${payload.id}`,
+        method: 'PUT',
+        body: payload.getISched(),
+      }, { root: true });
     },
-    async updateEvent({ commit }, payload: Event) {
+    async updateEvent({ commit, dispatch }, payload: Event) {
       commit('updateEvent', payload);
-      await payload.save();
+      const body = payload.getIEvent();
+      let path = '/events';
+      let method = 'POST';
+      if (payload.id !== 0) {
+        path += `/${payload.id}`;
+        method = 'PUT';
+      }
+
+      await dispatch('auth/makeAuthedRequest', {
+        path, method, body,
+      }, { root: true });
     },
-    async delEvent({ commit }, id: number) {
+    async delEvent({ commit, dispatch }, id: number) {
       commit('removeEvent', id);
-      await event.delEvent(id);
+      await dispatch('auth/makeAuthedRequest', {
+        path: `/events/${id}`,
+        method: 'DELETE',
+      }, { root: true });
     },
   },
 };

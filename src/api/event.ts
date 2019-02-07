@@ -51,13 +51,6 @@ export class Event {
       endTime: this.end.format('h:mm A'),
     };
   }
-
-  public async save() {
-    await fetch(process.env.VUE_APP_BACKEND_HOST + `/events/${this.id}`, {
-      method: 'PUT',
-      body: JSON.stringify(this.getIEvent()),
-    });
-  }
 }
 
 function eventSort(a: Event, b: Event): number {
@@ -68,11 +61,6 @@ function eventSort(a: Event, b: Event): number {
 }
 
 export default {
-  async delEvent(id: number): Promise<void> {
-    await fetch(process.env.VUE_APP_BACKEND_HOST + `/events/${id}`, {
-      method: 'DELETE',
-    });
-  },
   async getEvents(schedId: number): Promise<Event[]> {
     const resp = await fetch(process.env.VUE_APP_BACKEND_HOST + `/scheds/${schedId}/events`);
     const events = await resp.json();
