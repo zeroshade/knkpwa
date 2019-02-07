@@ -21,10 +21,6 @@ import (
 	webpush "github.com/SherClockHolmes/webpush-go"
 )
 
-const (
-	vapidPrivateKey = "7-axl4mKWJC81o6vLAzKZoDiEeSOAdRjx3OXdLmS9h0"
-)
-
 var loc *time.Location
 
 func init() {
@@ -185,6 +181,7 @@ type Notify struct {
 
 func main() {
 	port := os.Getenv("PORT")
+	vapidPrivateKey := os.Getenv("VAPID_PRIVATE_KEY")
 
 	if port == "" {
 		log.Fatal("$PORT must be set")
@@ -206,6 +203,16 @@ func main() {
 	router := gin.New()
 	router.Use(gin.Logger())
 	router.Use(cors.New(config))
+
+	router.Use(func(c *gin.Context) {
+		host := c.GetHeader("host")
+		proto := c.GetHeader("x-forwarded-proto")
+		if host != "localhost" && proto != "https" {
+			c.Redirect(http.StatusMovedPermanently, "https://"+host+c.Request.URL.RequestURI())
+			return
+		}
+		c.Next()
+	})
 
 	router.GET("/scheds", func(c *gin.Context) {
 		var scheds []Schedule
