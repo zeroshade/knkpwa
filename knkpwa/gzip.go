@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"compress/gzip"
 	"fmt"
-	"log"
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
@@ -15,10 +14,10 @@ import (
 )
 
 const (
-	BestCompression = gzip.BestCompression
-	BestSpeed = gzip.BestSpeed
+	BestCompression    = gzip.BestCompression
+	BestSpeed          = gzip.BestSpeed
 	DefaultCompression = gzip.DefaultCompression
-	NoCompression = gzip.NoCompression
+	NoCompression      = gzip.NoCompression
 )
 
 func Gzip(level, minLength int) gin.HandlerFunc {
@@ -41,8 +40,8 @@ func Gzip(level, minLength int) gin.HandlerFunc {
 
 		gzWriter := &gzipWriter{
 			ResponseWriter: c.Writer,
-			writer: gz,
-			minLength: minLength,
+			writer:         gz,
+			minLength:      minLength,
 		}
 
 		c.Writer = gzWriter
@@ -61,10 +60,10 @@ func Gzip(level, minLength int) gin.HandlerFunc {
 
 type gzipWriter struct {
 	gin.ResponseWriter
-	writer *gzip.Writer
-	buffer bytes.Buffer
+	writer    *gzip.Writer
+	buffer    bytes.Buffer
 	minLength int
-	compress bool
+	compress  bool
 }
 
 func (g *gzipWriter) WriteString(s string) (int, error) {
@@ -94,7 +93,6 @@ func (g *gzipWriter) Write(data []byte) (w int, err error) {
 	w, err = g.writer.Write(data)
 	return
 }
-
 
 func (g *gzipWriter) WriteHeader(code int) {
 	g.Header().Del("Content-Length")
