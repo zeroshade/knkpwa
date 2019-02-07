@@ -17,7 +17,6 @@ import { Component, Watch, Vue } from 'vue-property-decorator';
 import { Getter, Action } from 'vuex-class';
 import { Route } from 'vue-router';
 
-
 @Component
 export default class Layout extends Vue {
   @Action('fetchScheds') public fetchScheds!: () => Promise<void>;
@@ -53,3 +52,4 @@ export default class Layout extends Vue {
   }
 }
 </script>
+

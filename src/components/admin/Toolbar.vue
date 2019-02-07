@@ -5,7 +5,7 @@
     </v-toolbar-side-icon>
     <v-toolbar-title>Admin Panel {{ sched !== null ? `> ${sched.title}` : '' }}</v-toolbar-title>
     <v-spacer />
-    <v-btn to='/'>Back to Schedule</v-btn>
+    <v-btn href='/'>Back to Schedule</v-btn>
   </v-toolbar>
 </template>
 

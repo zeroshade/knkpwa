@@ -41,7 +41,7 @@
               </v-list-tile-content>
             </v-list-tile>
 
-            <v-list-tile to='/admin' v-if='isAdmin'>
+            <v-list-tile href='/admin' v-if='isAdmin'>
               <v-list-tile-content>
                 <v-list-tile-title>Go To Admin Panel</v-list-tile-title>
               </v-list-tile-content>

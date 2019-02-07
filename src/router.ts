@@ -1,26 +1,14 @@
 import Vue from 'vue';
 import Router, { Route } from 'vue-router';
-const RoomGrid = () => import(/* webpackChunkName: "group-app" */ '@/views/RoomGrid.vue');
-const Agenda = () => import(/* webpackChunkName: "group-app" */ '@/views/Agenda.vue');
-const Events = () => import(/* webpackChunkName: "group-app" */ '@/views/Events.vue');
-const EventDialog = () => import(/* webpackChunkName: "group-app" */ '@/components/EventDialog.vue');
-const Auth = () => import(/* webpackChunkName: "group-auth" */ '@/views/Auth.vue');
+import EventDialog from '@/components/EventDialog.vue';
 import NavBar from '@/components/NavBar.vue';
 import Toolbar from '@/components/Toolbar.vue';
-const AdminNav = () => import(/* webpackChunkName: "group-admin" */ '@/components/admin/NavDrawer.vue');
-const AdminToolbar = () => import(/* webpackChunkName: "group-admin" */ '@/components/admin/Toolbar.vue');
-const AdminSchedule = () => import(/* webpackChunkName: "group-admin" */ '@/views/admin/Schedule.vue');
 Vue.use(Router);
 
 const baseNavToolbar = {
   navbar: NavBar,
   toolbar: Toolbar,
   dialog: EventDialog,
-};
-
-const adminNavToolbar = {
-  navbar: AdminNav,
-  toolbar: AdminToolbar,
 };
 
 export default new Router({
@@ -31,54 +19,26 @@ export default new Router({
     {
       path: '/rooms', name: 'home',
       components: {
-        default: RoomGrid,
+        default: () => import(/* webpackChunkName: "group-room", webpackPreload: true */ '@/views/RoomGrid.vue'),
         ...baseNavToolbar,
       },
     },
     {
       path: '/agenda', name: 'agenda',
       components: {
-        default: Agenda,
+        default: () => import(/* webpackChunkName: "group-agenda" */ '@/views/Agenda.vue'),
         ...baseNavToolbar,
       },
     },
     {
       path: '/events', name: 'events',
       components: {
-        default: Events,
+        default: () => import(/* webpackChunkName: "group-events" */ '@/views/Events.vue'),
         ...baseNavToolbar,
       },
     },
     {
-      path: '/admin', name: 'admin',
-      components: {
-        ...adminNavToolbar,
-      },
-    },
-    {
-      path: '/admin/:id',
-      components: {
-        ...adminNavToolbar,
-        default: AdminSchedule,
-      },
-      props: {
-        navbar: false,
-        toolbar: false,
-        default: (route: Route) => ({ id: +route.params.id }),
-      },
-      children: [
-        {
-          path: '', name: 'admin.schedule',
-          component: () => import(/* webpackChunkName: "group-admin" */ '@/views/admin/SchedHome.vue'),
-        },
-        {
-          path: 'events', name: 'admin.events',
-          component: () => import(/* webpackChunkName: "group-admin" */ '@/views/admin/EventTable.vue'),
-        },
-      ],
-    },
-    {
-      path: '/callback', component: Auth, name: 'auth',
+      path: '/callback', component: () => import(/* webpackChunkName: "group-auth" */ '@/views/Auth.vue'), name: 'auth',
     },
     // {
     //   path: '/about',
