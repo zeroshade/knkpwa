@@ -64,7 +64,7 @@ func main() {
 
 	config := cors.DefaultConfig()
 	config.AllowHeaders = append(config.AllowHeaders, "Authorization")
-	config.AllowOrigins = []string{"http://localhost:8080",
+	config.AllowOrigins = []string{"http://localhost:8080", "http://fxdeva16.factset.com:8090",
 		"http://localhost:8090", "https://knksched.herokuapp.com"}
 
 	router := gin.New()
@@ -74,7 +74,7 @@ func main() {
 	router.Use(func(c *gin.Context) {
 		host := c.Request.Host
 		proto := c.GetHeader("x-forwarded-proto")
-		if host != "localhost:8090" && proto != "https" {
+		if host != "localhost:8090" && host != "fxdeva16.factset.com:8090" && proto != "https" {
 			c.Redirect(http.StatusMovedPermanently, "https://"+host+c.Request.URL.RequestURI())
 			return
 		}
@@ -191,6 +191,7 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"text": "howdy"})
 	})
 
+	router.Use(Gzip(DefaultCompression, 1024))
 	router.Use(ServeFile("/", "./dist"))
 	router.NoRoute(func(c *gin.Context) {
 		_, file := path.Split(c.Request.RequestURI)
