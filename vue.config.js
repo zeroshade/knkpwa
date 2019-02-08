@@ -31,39 +31,40 @@ module.exports = {
         }
       ]);
 
-      config
-        .plugin('preload-app')
-        .use(PreloadPlugin, [
-          {
-            rel: 'preload',
-            includeHtmlNames: [
-              'index.html'
-            ],
-            include: {
-              chunks: [ 'group-app' ],
-              entries: [
-                'index'
-              ]
-            }
+    config
+      .plugin('preload-app')
+      .use(PreloadPlugin, [
+        {
+          rel: 'preload',
+          includeHtmlNames: [
+            'index.html'
+          ],
+          include: {
+            chunks: [ 'group-app' ],
+            entries: [
+              'index'
+            ]
           }
-        ]);
+        }
+      ]);
 
-      config
-        .plugin('preload-for-admin')
-        .use(PreloadPlugin, [
-          {
-            rel: 'preload',
-            includeHtmlNames: [
-              'index.html'
-            ],
-            include: {
-              chunks: ['group-admin'],
-              entries: [
-                'admin'
-              ]
-            }
+    config
+      .plugin('preload-for-admin')
+      .use(PreloadPlugin, [
+        {
+          rel: 'preload',
+          includeHtmlNames: [
+            'admin/index.html'
+          ],
+          include: {
+            chunks: ['group-admin'],
+            entries: [
+              'admin'
+            ]
           }
-        ]);
+        }
+      ]);
+
   },
   pages: {
     index: {
@@ -100,6 +101,6 @@ module.exports = {
   assetsDir: undefined,
   runtimeCompiler: undefined,
   productionSourceMap: false,
-  parallel: undefined,
+  parallel: true,
   css: undefined
 }

@@ -31,10 +31,10 @@
 
 <script lang='ts'>
 import { Component, Prop, Vue } from 'vue-property-decorator';
+import colors from 'vuetify/es5/util/colors';
 import { Schedule } from '@/api/schedule';
 import { Action } from 'vuex-class';
 import { Event } from '@/api/event';
-import colors from 'vuetify/es5/util/colors';
 
 function camelCaseToDash(str: string): string {
     return str

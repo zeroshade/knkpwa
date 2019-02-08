@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -33,7 +34,9 @@ func ServeFile(urlPrefix, root string) gin.HandlerFunc {
 	}
 	return func(c *gin.Context) {
 		if fs.Exists(urlPrefix, c.Request.URL.Path) {
-			c.Header("Cache-Control", "public, max-age=31536000")
+			if !strings.Contains(c.Request.URL.Path, "service-worker.js") {
+				c.Header("Cache-Control", "public, max-age=31536000")
+			}
 			fileserver.ServeHTTP(c.Writer, c.Request)
 			c.Abort()
 		}

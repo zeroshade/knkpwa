@@ -11,7 +11,7 @@ export default new Router({
     },
     {
       path: '/admin/:id',
-      component: () => import(/* webpackChunkName: "group-admin", webpackPreload: true */ '@/views/admin/Schedule.vue'),
+      component: () => import(/* webpackChunkName: "group-admin" */ '@/views/admin/Schedule.vue'),
       props: (route: Route) => ({ id: +route.params.id }),
       children: [
         {

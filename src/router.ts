@@ -1,8 +1,8 @@
 import Vue from 'vue';
-import Router, { Route } from 'vue-router';
-Vue.use(Router);
+import VueRouter, { Route } from 'vue-router';
+Vue.use(VueRouter);
 
-export default new Router({
+export default new VueRouter({
   mode: 'history',
   base: process.env.BASE_URL,
   routes: [

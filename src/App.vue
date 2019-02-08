@@ -15,13 +15,15 @@
 <script lang='ts'>
 import { Component, Vue } from 'vue-property-decorator';
 import { Getter, Action } from 'vuex-class';
-import NavBar from '@/components/NavBar.vue';
 import Toolbar from '@/components/Toolbar.vue';
+import NavBar from '@/components/NavBar.vue';
+import EventDialog from '@/components/EventDialog.vue';
 
 @Component({
   components: {
     NavBar,
     Toolbar,
+    EventDialog,
   },
 })
 export default class Layout extends Vue {

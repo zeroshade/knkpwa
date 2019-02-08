@@ -160,14 +160,12 @@ import { Event } from '@/api/event';
 import moment from 'moment';
 import InlineEditText from '@/components/admin/InlineEditText.vue';
 import InlineDayTime from '@/components/admin/InlineDayTime.vue';
-import EventDialog from '@/components/admin/EventDialog.vue';
 import DayTimeInput from '@/components/admin/DayTimeInput.vue';
 
 @Component({
   components: {
     InlineEditText,
     InlineDayTime,
-    EventDialog,
     DayTimeInput,
   },
 })
