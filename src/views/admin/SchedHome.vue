@@ -25,11 +25,7 @@
       </v-card>
     </v-flex>
     <v-flex xs12 md5 v-if='schedule'>
-<<<<<<< Updated upstream
-      <v-card>
-=======
       <v-card class='mt-3'>
->>>>>>> Stashed changes
         <v-card-title class='headline'>Delete This Event?</v-card-title>
         <v-card-actions class='justify-center'>
           <v-dialog persistent v-model='dialog' max-width='300'>
