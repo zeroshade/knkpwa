@@ -31,7 +31,6 @@ module.exports = {
         }
       ]);
 
-    if (!(process.env.VUE_CLI_MODERN_MODE && !process.env.VUE_CLI_MODERN_BUILD)) {
       config
         .plugin('preload-app')
         .use(PreloadPlugin, [
@@ -41,7 +40,7 @@ module.exports = {
               'index.html'
             ],
             include: {
-              chunks: [ 'group-room' ],
+              chunks: [ 'group-app' ],
               entries: [
                 'index'
               ]
@@ -50,12 +49,21 @@ module.exports = {
         ]);
 
       config
-        .plugin('preload-admin')
-        .tap(args => {
-          args[0].include.chunks = ['group-admin'];
-          return args;
-        });
-    }
+        .plugin('preload-for-admin')
+        .use(PreloadPlugin, [
+          {
+            rel: 'preload',
+            includeHtmlNames: [
+              'index.html'
+            ],
+            include: {
+              chunks: ['group-admin'],
+              entries: [
+                'admin'
+              ]
+            }
+          }
+        ]);
   },
   pages: {
     index: {
