@@ -1,10 +1,10 @@
-import { Component, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue } from 'vue-property-decorator';
 import { Schedule } from '@/api/schedule';
 import moment from 'moment';
 
 @Component
 export default class GridMixin extends Vue {
-  public id = 3;
+  @Prop(Number) public id!: number;
   public pixelHeight = 50;
 
   public get times(): string[] {

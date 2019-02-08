@@ -13,15 +13,9 @@
     </v-list>
     <v-list class='pt-0' dense>
       <v-divider light/>
-      <v-list-tile v-for='(s, idx) in items' :value='select === idx'
-        :key='s.id' @click='schedule = idx'>
-        <v-list-tile-action v-if='idx === select'>
-          <v-icon>chevron_right</v-icon>
-        </v-list-tile-action>
-
-        <v-list-tile-content>
-          <v-list-tile-title>{{ s.title }}</v-list-tile-title>
-        </v-list-tile-content>
+      <v-list-tile v-for='s in items' :key='s.id'
+        :to='{ name: $route.name, params: { id: s.id }}'>
+        <v-list-tile-title>{{ s.title }}</v-list-tile-title>
       </v-list-tile>
     </v-list>
     <template v-if='authenticated'>
@@ -61,7 +55,9 @@ export default class NavBar extends Vue {
   @Getter('auth/userfavs') public userfavs!: number[];
   @Mutation('showModal') public showModal!: (payload: {ev: Event, color: string}) => void;
 
-  public select: number = 0;
+  public get select(): number {
+    return this.items.findIndex((s) => s.id === this.$route.params.id);
+  }
 
   public get favs(): Event[] {
     if (this.items.length <= this.select) { return []; }

@@ -2,7 +2,7 @@ import Vue from 'vue';
 import Vuex, { StoreOptions } from 'vuex';
 import { RootState } from './states';
 import authModule from './authmod';
-import adminModule from './admin';
+import adminModule from './adminmod';
 import sched, { Schedule } from '@/api/schedule';
 import { Event } from '@/api/event';
 
