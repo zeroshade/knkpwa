@@ -1,13 +1,27 @@
 import { AdminState, RootState } from './states';
 import { Module } from 'vuex';
-import sched, { Schedule } from '@/api/schedule';
+import sched, { Schedule, ISchedule } from '@/api/schedule';
 import event, { Event } from '@/api/event';
+import colors from 'vuetify/es5/util/colors';
+
+function camelCaseToDash(str: string): string {
+    return str
+        .replace(/[^a-zA-Z0-9]+/g, '-')
+        .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
+        .replace(/([a-z])([A-Z])/g, '$1-$2')
+        .replace(/([0-9])([^0-9])/g, '$1-$2')
+        .replace(/([^0-9])([0-9])/g, '$1-$2')
+        .replace(/-+/g, '-')
+        .toLowerCase();
+}
 
 const adminModule: Module<AdminState, RootState> = {
   namespaced: true,
   state: {
     schedule: null,
     events: [],
+    colorNames: Object.keys(colors).map(camelCaseToDash),
+    modifierNames: Object.keys(colors.red).map(camelCaseToDash),
   },
   getters: {
     sched(state) {
@@ -43,6 +57,21 @@ const adminModule: Module<AdminState, RootState> = {
       commit('setSched', s);
       const e = await event.getEvents(id);
       commit('setEvents', e);
+    },
+    async deleteSchedule({ dispatch }, id: number) {
+      await dispatch('auth/makeAuthedRequest', {
+        path: `/scheds/${id}`,
+        method: 'DELETE',
+      }, { root: true });
+      await dispatch('fetchScheds', undefined, { root: true });
+    },
+    async newSchedule({ dispatch }, payload: ISchedule) {
+      await dispatch('auth/makeAuthedRequest', {
+        path: '/scheds',
+        method: 'POST',
+        body: payload,
+      }, { root: true });
+      await dispatch('fetchScheds', undefined, { root: true });
     },
     async updateSchedule({ commit, dispatch }, payload: Schedule) {
       commit('setSched', payload);

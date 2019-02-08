@@ -1,7 +1,7 @@
 import moment from 'moment';
 import event, { Event } from '@/api/event';
 
-interface ISchedule {
+export interface ISchedule {
   id: number;
   start: string;
   numHours: number;

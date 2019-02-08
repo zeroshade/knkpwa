@@ -1,7 +1,7 @@
 <template>
   <v-app dark id='admin'>
     <nav-drawer v-model='drawer' />
-    <toolbar v-model='drawer' />
+    <toolbar :sched='sched' v-model='drawer' />
     <v-content fill-height fluid class='ml-4 mt-2 mr-3'>
       <v-layout align-top justify-left class='mb-3'>
         <v-flex xs12 md5>

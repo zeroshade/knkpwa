@@ -104,6 +104,26 @@ func main() {
 		c.Status(http.StatusOK)
 	})
 
+	router.POST("/scheds", checkJWT("create:schedule"), func(c *gin.Context) {
+		var sc Schedule
+		if err := c.ShouldBindJSON(&sc); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if db.NewRecord(sc) {
+			db.Create(&sc)
+		} else {
+			db.Save(&sc)
+		}
+		c.Status(http.StatusOK)
+	})
+
+	router.DELETE("/scheds/:id", func(c *gin.Context) {
+		db.Delete(Schedule{}, "id = ?", c.Param("id"))
+		c.Status(http.StatusOK)
+	})
+
 	router.GET("/scheds/:id/events", func(c *gin.Context) {
 		var events []Event
 		db.Find(&events, "sched_id = ?", c.Param("id"))
@@ -199,14 +219,13 @@ func main() {
 	router.NoRoute(func(c *gin.Context) {
 		start, file := path.Split(c.Request.RequestURI)
 		ext := filepath.Ext(file)
+
 		if strings.Contains(start, "/admin") {
 			c.File("./dist/admin/index.html")
-			return
-		}
-
-		if file == "" || ext == "" {
+		} else if file == "" || ext == "" {
 			c.File("./dist/index.html")
-			return
+		} else {
+			c.Status(http.StatusNotFound)
 		}
 	})
 

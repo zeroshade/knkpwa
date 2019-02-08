@@ -10,6 +10,10 @@ export default new Router({
       path: '/admin', name: 'admin',
     },
     {
+      path: '/admin/new', name: 'admin.new',
+      component: () => import(/* webpackChunkName: "group-admin" */ '@/views/admin/NewSchedule.vue'),
+    },
+    {
       path: '/admin/:id',
       name: 'admin.schedule',
       component: () => import(/* webpackChunkName: "group-admin" */ '@/views/admin/SchedHome.vue'),

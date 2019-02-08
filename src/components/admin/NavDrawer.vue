@@ -17,6 +17,15 @@
         </v-list-tile-action>
       </v-list-tile>
 
+      <v-list-tile avatar :to='{name: "admin.new"}'>
+        <v-list-tile-avatar>
+          <v-icon>add_circle_outline</v-icon>
+        </v-list-tile-avatar>
+        <v-list-tile-content>
+          <v-list-tile-title>Create New Schedule</v-list-tile-title>
+        </v-list-tile-content>
+      </v-list-tile>
+
       <v-list-group prepend-icon="event" value='true'>
         <v-list-tile slot='activator'>
           <v-list-tile-title>Schedules</v-list-tile-title>

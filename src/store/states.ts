@@ -5,6 +5,8 @@ import { Event } from '@/api/event';
 export interface AdminState {
   schedule: Schedule | null;
   events: Event[];
+  colorNames: string[];
+  modifierNames: string[];
 }
 
 export interface AuthState {

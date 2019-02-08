@@ -3,7 +3,7 @@
     <v-toolbar-side-icon v-if='$vuetify.breakpoint.smAndDown'>
       <v-icon @click.stop='$emit("input", !value)'>menu</v-icon>
     </v-toolbar-side-icon>
-    <v-toolbar-title>Admin Panel {{ sched !== null ? `> ${sched.title}` : '' }}</v-toolbar-title>
+    <v-toolbar-title>Admin Panel {{ sched ? `> ${sched.title}` : '' }}</v-toolbar-title>
     <v-spacer />
     <v-btn href='/'>Back to Schedule</v-btn>
   </v-toolbar>
@@ -17,12 +17,6 @@ import { Schedule } from '@/api/schedule';
 @Component
 export default class AdminToolbar extends Vue {
   @Prop(Boolean) public value!: boolean;
-  @Getter('getScheduleById') public getSchedule!: (id: number) => Schedule;
-
-  public get sched(): Schedule | null {
-    if (!this.$route.name || this.$route.name.match(/admin\./) === null) { return null; }
-
-    return this.getSchedule(+this.$route.params.id);
-  }
+  @Prop(Object) public sched!: Schedule;
 }
 </script>
