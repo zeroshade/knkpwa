@@ -11,18 +11,15 @@ export default new Router({
     },
     {
       path: '/admin/:id',
-      component: () => import(/* webpackChunkName: "group-admin" */ '@/views/admin/Schedule.vue'),
+      name: 'admin.schedule',
+      component: () => import(/* webpackChunkName: "group-admin" */ '@/views/admin/SchedHome.vue'),
       props: (route: Route) => ({ id: +route.params.id }),
-      children: [
-        {
-          path: '', name: 'admin.schedule',
-          component: () => import(/* webpackChunkName: "group-admin" */ '@/views/admin/SchedHome.vue'),
-        },
-        {
-          path: 'events', name: 'admin.events',
-          component: () => import(/* webpackChunkName: "group-admin" */ '@/views/admin/EventTable.vue'),
-        },
-      ],
+    },
+    {
+      path: '/admin/:id/events',
+      name: 'admin.events',
+      props: (route: Route) => ({ id: +route.params.id }),
+      component: () => import(/* webpackChunkName: "group-admin" */ '@/views/admin/EventTable.vue'),
     },
   ],
 });

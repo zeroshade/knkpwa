@@ -2,8 +2,26 @@
   <v-app dark id='admin'>
     <nav-drawer v-model='drawer' />
     <toolbar v-model='drawer' />
-    <v-content fill-height>
-      <router-view />
+    <v-content fill-height fluid class='ml-4 mt-2'>
+      <v-layout align-top justify-left class='mb-3'>
+        <v-flex xs12 md5>
+          <v-card dark>
+            <v-card-text v-if='sched'>
+              <v-layout row justify-space-between>
+                <v-flex xs6 class='text-xs-left'>
+                  <strong>Start Date:</strong>
+                  {{ sched.dayStart.format('ddd, MMM Do') }}
+                </v-flex>
+                <v-flex xs6 class='text-xs-right'>
+                  <strong>End Date:</strong>
+                  {{ sched.dayEnd.format('ddd, MMM Do') }}
+                </v-flex>
+              </v-layout>
+            </v-card-text>
+          </v-card>
+        </v-flex>
+      </v-layout>
+      <router-view :schedule='sched' :events='events' />
     </v-content>
     <v-footer app>
       <span>&copy; 2018</span>
@@ -12,8 +30,11 @@
 </template>
 
 <script lang='ts'>
-import { Component, Vue } from 'vue-property-decorator';
+import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
 import { Getter, Action } from 'vuex-class';
+import { Schedule } from '@/api/schedule';
+import { Event } from '@/api/event';
+import { Route } from 'vue-router';
 import NavDrawer from '@/components/admin/NavDrawer.vue';
 import Toolbar from '@/components/admin/Toolbar.vue';
 
@@ -24,8 +45,10 @@ import Toolbar from '@/components/admin/Toolbar.vue';
   },
 })
 export default class Admin extends Vue {
-  @Action('fetchScheds') public fetchScheds!: () => Promise<void>;
+  @Action('admin/loadSchedById') public loadsched!: (id: number) => Promise<void>;
   @Getter('auth/admin') public isAdmin!: boolean;
+  @Getter('admin/sched') public sched!: Schedule | null;
+  @Getter('admin/events') public events!: Event[];
 
   public drawer = null;
 
@@ -34,7 +57,13 @@ export default class Admin extends Vue {
       window.location.href = process.env.BASE_URL;
       return;
     }
-    this.fetchScheds();
+  }
+
+  @Watch('$route')
+  public routeChange(val: Route) {
+    if (val.params.id && (this.sched === null || this.sched.id !== +val.params.id)) {
+      this.loadsched(+val.params.id);
+    }
   }
 }
 </script>

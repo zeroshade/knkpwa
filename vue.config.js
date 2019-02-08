@@ -3,10 +3,25 @@ const path = require('path');
 const MomentLocalesPlugin = require('moment-locales-webpack-plugin');
 const PreloadPlugin = require('@vue/preload-webpack-plugin');
 
+class CustomFilterPlugin {
+  constructor({ exclude }) {
+    this.exclude = exclude;
+  }
+
+  apply(compiler) {
+    compiler.hooks.afterEmit.tap('CustomFilterPlugin', compilation => {
+      compilation.warnings = compilation.warnings.filter(warning => !this.exclude.test(warning.message));
+    });
+  }
+};
+
 module.exports = {
   configureWebpack: {
     plugins: [
       new MomentLocalesPlugin(),
+      new CustomFilterPlugin({
+        exclude: /Conflicting order between:/
+      })
     ]
   },
   chainWebpack: config => {

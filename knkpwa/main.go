@@ -197,10 +197,16 @@ func main() {
 	router.Use(Gzip(DefaultCompression, 1024))
 	router.Use(ServeFile("/", "./dist"))
 	router.NoRoute(func(c *gin.Context) {
-		_, file := path.Split(c.Request.RequestURI)
+		start, file := path.Split(c.Request.RequestURI)
 		ext := filepath.Ext(file)
+		if strings.Contains(start, "/admin") {
+			c.File("./dist/admin/index.html")
+			return
+		}
+
 		if file == "" || ext == "" {
 			c.File("./dist/index.html")
+			return
 		}
 	})
 

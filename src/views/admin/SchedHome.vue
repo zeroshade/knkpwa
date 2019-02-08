@@ -11,7 +11,7 @@
               <td>{{ item }}</td>
               <td :class='schedule.colorMap[item]' width='50%'>
                 <v-edit-dialog persistent large
-                  lazy :return-value.sync='schedule.colorMap[item]'
+                  lazy
                   @open='open(item)' @save='save(item)'>
                   {{ schedule.colorMap[item] }}
                   <template slot='input'>

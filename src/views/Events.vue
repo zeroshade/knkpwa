@@ -10,7 +10,7 @@
       <template v-for='day in dateRange'>
         <v-data-iterator :items='events.filter(i => i.start.isBetween(day, day.clone().add(sched.numHours, "h"), undefined, "[)"))'
           :pagination.sync='pagination' hide-actions :custom-sort='customSort'
-          :search='search' content-class='layout row wrap' :filter='filter'>
+          :search='search' content-tag='v-layout' content-class='layout row wrap' :filter='filter'>
           <p slot='header' class='ma-3 subheading font-italic white--text text-uppercase'>
             {{ day.format('dddd') }}
           </p>
