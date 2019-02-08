@@ -1,6 +1,6 @@
 <template>
   <v-layout>
-    <v-flex xs6 v-if='schedule'>
+    <v-flex xs12 md6 v-if='schedule'>
       <v-card class='mt-3'>
         <v-card-title class='headline'>Colors!</v-card-title>
         <v-card-text>
