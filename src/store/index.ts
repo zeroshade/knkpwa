@@ -15,6 +15,7 @@ export default new Vuex.Store<RootState>({
   },
   state: {
     schedules: [],
+    curSchedule: 0,
     showModal: false,
     modalEvent: null,
     modalColor: '',
@@ -23,8 +24,15 @@ export default new Vuex.Store<RootState>({
     getScheduleById: (state) => (id: number) => {
       return state.schedules.find((s) => s.id === id);
     },
+    curSchedule(state: RootState): Schedule {
+      return state.schedules[state.curSchedule];
+    },
   },
   mutations: {
+    setCurSchedule(state: RootState, id: number) {
+      state.curSchedule = state.schedules.findIndex((s) => s.id === id);
+      state.schedules[state.curSchedule].loadEvents();
+    },
     setScheds(state: RootState, scheds: Schedule[]) {
       state.schedules = scheds;
     },

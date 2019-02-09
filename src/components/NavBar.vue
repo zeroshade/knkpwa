@@ -54,20 +54,17 @@ export default class NavBar extends Vue {
   @State('schedules') public items!: Schedule[];
   @Getter('auth/userfavs') public userfavs!: number[];
   @Mutation('showModal') public showModal!: (payload: {ev: Event, color: string}) => void;
-
-  public get select(): number {
-    return this.items.findIndex((s) => s.id === this.$route.params.id);
-  }
+  @Getter('curSchedule') public curSchedule!: Schedule;
 
   public get favs(): Event[] {
-    if (this.items.length <= this.select) { return []; }
+    if (!this.items.length) { return []; }
 
-    return this.items[this.select].events.filter((e) => this.userfavs.includes(e.id))
+    return this.curSchedule.events.filter((e) => this.userfavs.includes(e.id))
       .sort((a, b) => a.start.diff(b.start));
   }
 
   public eventColor(ev: Event): string {
-    return this.items[this.select].colorMap[ev.room];
+    return this.curSchedule.colorMap[ev.room];
   }
 }
 </script>

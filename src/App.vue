@@ -27,13 +27,8 @@ import EventDialog from '@/components/EventDialog.vue';
   },
 })
 export default class Layout extends Vue {
-  @Action('fetchScheds') public fetchScheds!: () => Promise<void>;
   @Getter('auth/admin') public isAdmin!: boolean;
 
   public drawer = null;
-
-  public mounted() {
-    this.fetchScheds();
-  }
 }
 </script>
