@@ -63,23 +63,6 @@ module.exports = {
         }
       ]);
 
-    config
-      .plugin('preload-for-admin')
-      .use(PreloadPlugin, [
-        {
-          rel: 'preload',
-          includeHtmlNames: [
-            'admin/index.html'
-          ],
-          include: {
-            chunks: ['group-admin'],
-            entries: [
-              'admin'
-            ]
-          }
-        }
-      ]);
-
   },
   pages: {
     index: {
@@ -99,7 +82,7 @@ module.exports = {
     themeColor: '#F68043',
     msTileColor: '#0E8DF1',
     appleMobileWebAppCapable: 'yes',
-    assetsVersion: '2',
+    assetsVersion: '3',
     manifestPath: 'manifest.json',
     workboxOptions: {
       swSrc: 'src/service-worker.js',

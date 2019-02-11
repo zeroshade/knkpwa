@@ -1,11 +1,25 @@
-import { Component, Vue } from 'vue-property-decorator';
+import { Component, Prop, Watch, Vue } from 'vue-property-decorator';
 import { Schedule } from '@/api/schedule';
+import { Mutation, Action } from 'vuex-class';
 import moment from 'moment';
 
 @Component
 export default class GridMixin extends Vue {
-  public id = 3;
+  @Prop(Number) public id!: number;
+  @Action('fetchScheds') public fetchScheds!: () => Promise<void>;
+  @Mutation('setCurSchedule') public setSched!: (id: number) => void;
+
   public pixelHeight = 50;
+
+  public async mounted() {
+    await this.fetchScheds();
+    this.setSched(this.id);
+  }
+
+  @Watch('id')
+  public load(val: number) {
+    this.setSched(this.id);
+  }
 
   public get times(): string[] {
     if (!this.sched) { return []; }

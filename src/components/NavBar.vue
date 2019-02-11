@@ -13,15 +13,9 @@
     </v-list>
     <v-list class='pt-0' dense>
       <v-divider light/>
-      <v-list-tile v-for='(s, idx) in items' :value='select === idx'
-        :key='s.id' @click='schedule = idx'>
-        <v-list-tile-action v-if='idx === select'>
-          <v-icon>chevron_right</v-icon>
-        </v-list-tile-action>
-
-        <v-list-tile-content>
-          <v-list-tile-title>{{ s.title }}</v-list-tile-title>
-        </v-list-tile-content>
+      <v-list-tile v-for='s in items' :key='s.id'
+        :to='{ name: $route.name, params: { id: s.id }}'>
+        <v-list-tile-title>{{ s.title }}</v-list-tile-title>
       </v-list-tile>
     </v-list>
     <template v-if='authenticated'>
@@ -60,18 +54,17 @@ export default class NavBar extends Vue {
   @State('schedules') public items!: Schedule[];
   @Getter('auth/userfavs') public userfavs!: number[];
   @Mutation('showModal') public showModal!: (payload: {ev: Event, color: string}) => void;
-
-  public select: number = 0;
+  @Getter('curSchedule') public curSchedule!: Schedule;
 
   public get favs(): Event[] {
-    if (this.items.length <= this.select) { return []; }
+    if (!this.items.length) { return []; }
 
-    return this.items[this.select].events.filter((e) => this.userfavs.includes(e.id))
+    return this.curSchedule.events.filter((e) => this.userfavs.includes(e.id))
       .sort((a, b) => a.start.diff(b.start));
   }
 
   public eventColor(ev: Event): string {
-    return this.items[this.select].colorMap[ev.room];
+    return this.curSchedule.colorMap[ev.room];
   }
 }
 </script>

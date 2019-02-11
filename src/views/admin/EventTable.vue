@@ -36,15 +36,19 @@
             :dayArray='daySelect' format='ddd, h:mm a' />
         </td>
         <td>
-          <inline-edit-text label='Organizer'
+          <inline-combo-box label='Organizer'
             v-model='item.organizer'
+            :items='organizerList'
+            :multiple='true'
+            chips
             @save='updateEv(item)' />
         </td>
         <td>{{ item.duration | duration }}</td>
         <td>
-          <inline-edit-text label='Room'
+          <inline-combo-box label='Room'
             v-model='item.room'
-            @save='updateEv(item)' />
+            :items='roomList'
+            @save='updateEv(item)'/>
         </td>
         <td>
           <v-icon v-if='item.icon' v-text='item.icon'></v-icon>
@@ -99,13 +103,18 @@
                   :rules='[v => !!v || "Cannot be empty"]'/>
               </v-flex>
               <v-flex xs5>
-                <v-text-field label='Room'
+                <v-combobox label='Room'
                   v-model='toEdit.room'
+                  :items='roomList'
                   :rules='[v => !!v || "Cannot be empty"]'/>
               </v-flex>
               <v-flex xs5 offset-xs1>
-                <v-text-field label='Organizer'
-                  v-model='toEdit.organizer'
+                <v-combobox label='Organizer'
+                  :value='toEdit.organizer.split(",").map(o => o.trim())'
+                  @input='toEdit.organizer = $event.join(", ")'
+                  :items='organizerList'
+                  multiple
+                  chips
                   :rules='[v => !!v || "Cannot be empty"]'/>
               </v-flex>
               <v-flex xs5>
@@ -161,12 +170,14 @@ import moment from 'moment';
 import InlineEditText from '@/components/admin/InlineEditText.vue';
 import InlineDayTime from '@/components/admin/InlineDayTime.vue';
 import DayTimeInput from '@/components/admin/DayTimeInput.vue';
+import InlineComboBox from '@/components/admin/InlineComboBox.vue';
 
 @Component({
   components: {
     InlineEditText,
     InlineDayTime,
     DayTimeInput,
+    InlineComboBox,
   },
 })
 export default class EventTable extends Vue {
@@ -181,6 +192,17 @@ export default class EventTable extends Vue {
   public editDialog = false;
   public toDelete: Event | null = null;
   public toEdit: Event | null = null;
+
+  public get roomList(): string[] {
+    return Array.from(new Set(this.events.map((e) => e.room)));
+  }
+
+  public get organizerList(): string[] {
+    return Array.from(this.events.reduce((acc, cv) => {
+      cv.organizer.split(',').map((o) => o.trim()).forEach(acc.add.bind(acc));
+      return acc;
+    }, new Set()));
+  }
 
   public get daySelect(): moment.Moment[] {
     const range = this.schedule.dateRange();

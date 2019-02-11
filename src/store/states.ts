@@ -22,4 +22,5 @@ export interface RootState {
   showModal: boolean;
   modalEvent: Event | null;
   modalColor: string;
+  curSchedule: number;
 }

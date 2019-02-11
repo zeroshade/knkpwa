@@ -13,7 +13,7 @@
 </template>
 
 <script lang='ts'>
-import { Component, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue } from 'vue-property-decorator';
 import { Getter, Action } from 'vuex-class';
 import Toolbar from '@/components/Toolbar.vue';
 import NavBar from '@/components/NavBar.vue';
@@ -27,13 +27,8 @@ import EventDialog from '@/components/EventDialog.vue';
   },
 })
 export default class Layout extends Vue {
-  @Action('fetchScheds') public fetchScheds!: () => Promise<void>;
   @Getter('auth/admin') public isAdmin!: boolean;
 
   public drawer = null;
-
-  public mounted() {
-    this.fetchScheds();
-  }
 }
 </script>
