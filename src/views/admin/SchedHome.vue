@@ -15,7 +15,7 @@
                   @open='open(item)' @save='save(item)'>
                   {{ schedule.colorMap[item] }}
                   <template slot='input'>
-                    <color-choser v-model='tempColor' />
+                    <color-chooser v-model='tempColor' />
                   </template>
                 </v-edit-dialog>
               </td>
@@ -75,7 +75,7 @@ export default class AdminScheduleHome extends Vue {
   }
 
   public open(item: string) {
-    this.tempColor = this.schedule.colorMap[item];
+    this.tempColor = this.schedule.colorMap[item] || this.schedule.colorMap.other;
   }
 
   public save(item: string) {
