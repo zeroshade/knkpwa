@@ -12,7 +12,16 @@ workbox.skipWaiting();
 workbox.clientsClaim();
 
 // we're a singlepage app so register all navigation requests through index.html
-workbox.routing.registerNavigationRoute('/index.html');
+workbox.routing.registerNavigationRoute('/index.html', {
+  blacklist: [
+    new RegExp('/admin'),
+  ]
+});
+workbox.routing.registerNavigationRoute('/admin/index.html', {
+  whitelist: [
+    new RegExp('/admin'),
+  ]
+});
 
 workbox.routing.registerRoute(new RegExp('/scheds'),
   workbox.strategies.networkFirst({
