@@ -32,7 +32,7 @@
         </v-list-tile>
 
         <template v-for='s in schedules'>
-          <template v-if='$route.name.match(/admin\./) !== null && +$route.params.id === s.id'>
+          <template v-if='$route.params.id && +$route.params.id === s.id'>
             <v-list-group no-action sub-group value='true' :key='s.id'>
               <v-list-tile slot='activator'>
                 <v-list-tile-title>{{ s.title }}</v-list-tile-title>
