@@ -110,7 +110,7 @@
               </v-flex>
               <v-flex xs5 offset-xs1>
                 <v-combobox label='Organizer'
-                  :value='toEdit.organizer.split(",").map(o => o.trim())'
+                  :value='toEdit.organizer ? toEdit.organizer.split(",").map(o => o.trim()) : toEdit.organizer'
                   @input='toEdit.organizer = $event.join(", ")'
                   :items='organizerList'
                   multiple
