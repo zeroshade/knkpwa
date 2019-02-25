@@ -51,3 +51,11 @@ func (e *Event) UnmarshalJSON(data []byte) error {
 func (Event) TableName() string {
 	return "knkevents"
 }
+
+type DraftEvent struct {
+	Event
+}
+
+func (DraftEvent) TableName() string {
+	return "knk_draft_events"
+}

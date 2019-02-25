@@ -25,5 +25,10 @@ export default new Router({
       props: (route: Route) => ({ id: +route.params.id }),
       component: () => import(/* webpackChunkName: "group-admin" */ '@/views/admin/EventTable.vue'),
     },
+    {
+      path: '/admin/:id/draft',
+      name: 'admin.draft',
+      component: () => import(/* webpackChunkName: "group-admin" */ '@/views/admin/Draft.vue'),
+    },
   ],
 });

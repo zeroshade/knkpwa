@@ -46,7 +46,6 @@ export default class InlineCombobox extends Vue {
   @Emit()
   public open() {
     if (this.multiple) {
-      console.log(this.value, this.value.split(','));
       this.saved = this.value.split(',').map((o) => o.trim());
     } else {
       this.saved = this.value;

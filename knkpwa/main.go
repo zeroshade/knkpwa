@@ -63,7 +63,7 @@ func main() {
 	}
 	defer db.Close()
 
-	db.AutoMigrate(&Subscription{}, &Schedule{}, &Event{}, &ColorMap{})
+	db.AutoMigrate(&Subscription{}, &Schedule{}, &Event{}, &ColorMap{}, &DraftEvent{})
 
 	config := cors.DefaultConfig()
 	config.AllowHeaders = append(config.AllowHeaders, "Authorization")
@@ -129,6 +129,43 @@ func main() {
 		db.Find(&events, "sched_id = ?", c.Param("id"))
 
 		c.JSON(http.StatusOK, events)
+	})
+
+	router.GET("/scheds/:id/draft", func(c *gin.Context) {
+		var events []DraftEvent
+		db.Find(&events, "sched_id = ?", c.Param("id"))
+		c.JSON(http.StatusOK, events)
+	})
+
+	router.DELETE("/draft/:id", func(c *gin.Context) {
+		db.Delete(DraftEvent{}, "id = ?", c.Param("id"))
+		c.Status(http.StatusOK)
+	})
+
+	router.PUT("/draft/publish/:id", checkJWT("create:event"), func(c *gin.Context) {
+		var ev DraftEvent
+		db.Find(&ev, "id = ?", c.Param("id"))
+
+		pub := ev.Event
+		pub.ID = 0
+		db.Create(&pub)
+		db.Delete(&ev)
+		c.Status(http.StatusOK)
+	})
+
+	router.POST("/draft", func(c *gin.Context) {
+		var ev DraftEvent
+		if err := c.ShouldBindJSON(&ev); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if db.NewRecord(ev) {
+			db.Create(&ev)
+		} else {
+			db.Save(&ev)
+		}
+		c.JSON(http.StatusOK, gin.H{"id": ev.ID})
 	})
 
 	router.POST("/events", checkJWT("create:event"), func(c *gin.Context) {

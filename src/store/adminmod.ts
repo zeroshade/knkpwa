@@ -1,7 +1,7 @@
 import { AdminState, RootState } from './states';
 import { Module } from 'vuex';
 import sched, { Schedule, ISchedule } from '@/api/schedule';
-import event, { Event } from '@/api/event';
+import event, { Event, IEvent } from '@/api/event';
 import colors from 'vuetify/es5/util/colors';
 
 function camelCaseToDash(str: string): string {
@@ -22,6 +22,7 @@ const adminModule: Module<AdminState, RootState> = {
     events: [],
     colorNames: Object.keys(colors).map(camelCaseToDash),
     modifierNames: Object.keys(colors.red).map(camelCaseToDash),
+    draftEvents: [],
   },
   getters: {
     sched(state) {
@@ -29,6 +30,9 @@ const adminModule: Module<AdminState, RootState> = {
     },
     events(state) {
       return state.events;
+    },
+    draft(state) {
+      return state.draftEvents;
     },
   },
   mutations: {
@@ -38,6 +42,13 @@ const adminModule: Module<AdminState, RootState> = {
     setEvents(state: AdminState, payload: Event[]) {
       state.events = payload;
     },
+    setDraft(state: AdminState, payload: Event[]) {
+      payload.forEach((e) => { e.draft = true; });
+      state.draftEvents = payload;
+    },
+    addDraftEvent(state: AdminState, payload: Event) {
+      state.draftEvents.push(payload);
+    },
     updateEvent(state: AdminState, payload: Event) {
       const idx = state.events.findIndex((e) => e.id === payload.id);
       if (idx !== -1) {
@@ -45,6 +56,9 @@ const adminModule: Module<AdminState, RootState> = {
       } else {
         state.events.push(payload);
       }
+    },
+    removeDraftEvent(state: AdminState, payload: Event) {
+      state.draftEvents.splice(state.draftEvents.findIndex((e) => payload === e), 1);
     },
     removeEvent(state: AdminState, id: number) {
       const idx = state.events.findIndex((e) => e.id === id);
@@ -101,6 +115,40 @@ const adminModule: Module<AdminState, RootState> = {
         path: `/events/${id}`,
         method: 'DELETE',
       }, { root: true });
+    },
+    async loadDraft({ commit, dispatch }, id: number) {
+      const e = await dispatch('auth/makeAuthedRequest', {
+        path: `/scheds/${id}/draft`,
+        method: 'GET',
+      }, { root: true });
+      commit('setDraft', (await e.json()).map((o: IEvent) => new Event(o)));
+    },
+    async addDraftEvent({ commit, dispatch }, payload: Event) {
+      const e = await dispatch('auth/makeAuthedRequest', {
+        path: '/draft',
+        method: 'POST',
+        body: payload,
+      }, { root: true });
+      payload.id = (await e.json()).id;
+      payload.draft = true;
+      commit('addDraftEvent', payload);
+    },
+    async removeDraftEvent({ commit, dispatch }, payload: Event) {
+      await dispatch('auth/makeAuthedRequest', {
+        path: `/draft/${payload.id}`,
+        method: 'DELETE',
+      }, { root: true });
+      commit('removeDraftEvent', payload);
+    },
+    async publishEvent({ state, commit, dispatch }, payload: Event) {
+      await dispatch('auth/makeAuthedRequest', {
+        path: `/draft/publish/${payload.id}`,
+        method: 'PUT',
+      }, { root: true });
+      if (state.schedule) {
+        commit('setEvents', await event.getEvents(state.schedule.id));
+        commit('removeDraftEvent', payload);
+      }
     },
   },
 };

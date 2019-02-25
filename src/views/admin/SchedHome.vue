@@ -13,7 +13,7 @@
                 <v-edit-dialog persistent large
                   lazy
                   @open='open(item)' @save='save(item)'>
-                  {{ schedule.colorMap[item] }}
+                  <span class='grey--text text--lighten-5'>{{ schedule.colorMap[item] }}</span>
                   <template slot='input'>
                     <color-chooser v-model='tempColor' />
                   </template>

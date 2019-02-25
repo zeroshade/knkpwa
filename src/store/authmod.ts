@@ -5,6 +5,13 @@ import { Module } from 'vuex';
 
 const auth = new Authenticator();
 
+interface AuthPayload {
+  path: string;
+  method: string;
+  body?: object;
+  attempts?: number;
+}
+
 const authModule: Module<AuthState, RootState> = {
   namespaced: true,
   state: {
@@ -86,14 +93,14 @@ const authModule: Module<AuthState, RootState> = {
       auth.handleAuthentication().then((authResult) => {
         commit('authenticated', authResult);
       }).catch((err) => {
-        console.log(err);
+        commit('logError', err, { root: true });
       });
     },
     renewAuth({ commit }) {
       auth.renewSession().then((authResult) => {
         commit('authenticated', authResult);
       }).catch((err) => {
-        console.log(err);
+        commit('logError', err, { root: true });
       });
     },
     toggleFav({ commit, state, getters }, id: number) {
@@ -109,19 +116,26 @@ const authModule: Module<AuthState, RootState> = {
         if (!prof) { return; }
         commit('updateFavs', prof.user_metadata.favs);
       }).catch((err) => {
-        console.log(err);
+        commit('logError', err, { root: true });
       });
     },
-    async makeAuthedRequest({ state }, payload: {path: string, method: string, body?: object}) {
-      if (!state.user) { return; }
+    async makeAuthedRequest({ state, dispatch }, payload: AuthPayload) {
+      if (!state.user || (payload.attempts && payload.attempts > 2)) { return; }
 
-      await fetch(process.env.VUE_APP_BACKEND_HOST + payload.path, {
+      const resp = await fetch(process.env.VUE_APP_BACKEND_HOST + payload.path, {
         method: payload.method,
         body: payload.body ? JSON.stringify(payload.body) : undefined,
         headers: {
           Authorization: `Bearer ${state.accessToken}`,
         },
       });
+
+      if (resp.status === 401) {
+        await dispatch('renewAuth');
+        payload.attempts = (payload.attempts || 0) + 1;
+        return await dispatch('makeAuthedRequest', payload);
+      }
+      return resp;
     },
     async updateSubscription({ state }, sub: PushSubscription) {
       if (!state.user) { return; }

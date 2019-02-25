@@ -1,6 +1,6 @@
 import moment from 'moment';
 
-interface IEvent {
+export interface IEvent {
   startTime: string;
   endTime: string;
   day: string;
@@ -26,9 +26,15 @@ export class Event {
   public hideAgenda = false;
   public start: moment.Moment;
   public end: moment.Moment;
-  public duration: moment.Duration;
+  public draft = false;
 
-  constructor(ev: IEvent) {
+  constructor(ev?: IEvent) {
+    if (!ev) {
+      this.start = moment();
+      this.end = moment().add(1, 'h');
+      return;
+    }
+
     Object.assign(this, ev);
 
     this.start = moment(`${ev.day} ${ev.startTime}`, 'YYYY-MM-DD h:mm A');
@@ -36,8 +42,20 @@ export class Event {
 
     this.end = moment(`${ev.day} ${ev.endTime}`, 'YYYY-MM-DD h:mm A');
     if (this.end.hours() <= 3) { this.end.add(1, 'day'); }
+  }
 
-    this.duration = moment.duration(this.end.diff(this.start));
+  public get duration(): moment.Duration {
+    return moment.duration(this.end.diff(this.start));
+  }
+
+  public clear() {
+    this.title = '';
+    this.room = '';
+    this.icon = '';
+    this.id = -1;
+    this.organizer = '';
+    this.desc = '';
+    this.end = this.start.clone().add(1, 'h');
   }
 
   public getIEvent(): IEvent {
@@ -60,6 +78,8 @@ function eventSort(a: Event, b: Event): number {
   return a.start.isBefore(b.start) ? -1 : 1;
 }
 
+export type MinToPixelFunc = (minutes: number | string) => number;
+
 export default {
   async getEvents(schedId: number): Promise<Event[]> {
     const resp = await fetch(process.env.VUE_APP_BACKEND_HOST + `/scheds/${schedId}/events`);
@@ -67,6 +87,22 @@ export default {
     return events.map((e: IEvent) => new Event(e));
   },
   eventSort,
+  eventCols(events: Event[]): Event[][] {
+    const cols: Event[][] = [];
+    for (const ev of events) {
+      let placed = false;
+      for (const c of cols) {
+        const lastEvent = c[c.length - 1];
+        if (ev.start.isSameOrAfter(lastEvent.end)) {
+          c.push(ev);
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) { cols.push([ev]); }
+    }
+    return cols;
+  },
   orderEvents(eventList: Event[]): Event[][] {
     const res: Event[][] = [];
     let cur: Event[] = [];
@@ -96,6 +132,18 @@ export default {
     }
     if (cur.length) {
       res.push(cur);
+    }
+    return res;
+  },
+  colItems(col: Event[], minutesToPixels: MinToPixelFunc): Array<{ev: Event, margin: number}> {
+    const res: Array<{ev: Event, margin: number}> = [];
+    for (const ev of col) {
+      if (!res.length) {
+        res.push({ev, margin: 0});
+        continue;
+      }
+      const lastEvent = res[res.length - 1].ev;
+      res.push({ev, margin: minutesToPixels(ev.start.diff(lastEvent.end, 'minutes'))});
     }
     return res;
   },

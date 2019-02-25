@@ -46,6 +46,10 @@
                 <v-list-tile-title>Events</v-list-tile-title>
               </v-list-tile>
 
+              <v-list-tile :to='{ name: "admin.draft", params: {id: s.id }}'>
+                <v-list-tile-title>Build Draft</v-list-tile-title>
+              </v-list-tile>
+
             </v-list-group>
           </template>
           <template v-else>

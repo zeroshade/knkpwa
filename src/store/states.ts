@@ -7,6 +7,7 @@ export interface AdminState {
   events: Event[];
   colorNames: string[];
   modifierNames: string[];
+  draftEvents: Event[];
 }
 
 export interface AuthState {

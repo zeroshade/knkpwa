@@ -46,6 +46,9 @@ export default new Vuex.Store<RootState>({
       state.modalEvent = null;
       state.modalColor = '';
     },
+    logError(state: RootState, payload: Error) {
+      console.log(payload);
+    },
   },
   actions: {
     async fetchScheds({ commit }) {
