@@ -46,8 +46,13 @@ const adminModule: Module<AdminState, RootState> = {
       payload.forEach((e) => { e.draft = true; });
       state.draftEvents = payload;
     },
-    addDraftEvent(state: AdminState, payload: Event) {
-      state.draftEvents.push(payload);
+    updateDraftEvent(state: AdminState, payload: Event) {
+      const idx = state.draftEvents.findIndex((e) => e.id === payload.id);
+      if (idx !== -1) {
+        state.draftEvents.splice(idx, 1, payload);
+      } else {
+        state.draftEvents.push(payload);
+      }
     },
     updateEvent(state: AdminState, payload: Event) {
       const idx = state.events.findIndex((e) => e.id === payload.id);
@@ -127,11 +132,11 @@ const adminModule: Module<AdminState, RootState> = {
       const e = await dispatch('auth/makeAuthedRequest', {
         path: '/draft',
         method: 'POST',
-        body: payload,
+        body: payload.getIEvent(),
       }, { root: true });
       payload.id = (await e.json()).id;
       payload.draft = true;
-      commit('addDraftEvent', payload);
+      commit('updateDraftEvent', payload);
     },
     async removeDraftEvent({ commit, dispatch }, payload: Event) {
       await dispatch('auth/makeAuthedRequest', {

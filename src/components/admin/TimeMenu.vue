@@ -17,6 +17,7 @@
       slot='activator'
       prepend-icon='access_time'
       readonly
+      :rules='rules'
       :value='formatted' />
     <v-time-picker class='elevation=0'
       v-if='menu'
@@ -35,6 +36,7 @@ import moment from 'moment';
 export default class TimeMenu extends Vue {
   @Prop(String) public value!: string;
   @Prop(String) public label!: string;
+  @Prop({ default: [] }) public rules!: Array<(v: string) => boolean | string>;
 
   public menu = false;
   public save = '';

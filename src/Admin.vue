@@ -1,7 +1,7 @@
 <template>
   <v-app light id='admin'>
-    <nav-drawer v-model='drawer' />
-    <toolbar :sched='sched' v-model='drawer' />
+    <nav-drawer v-model='drawer' style="z-index: 200;" />
+    <toolbar :sched='sched' v-model='drawer' style="z-index: 200;" />
     <v-content fill-height fluid class='ml-4 mt-2 mr-3'>
       <v-layout align-top justify-left class='mb-3'>
         <v-flex xs12 md5>
@@ -23,7 +23,7 @@
       </v-layout>
       <router-view :schedule='sched' :events='events' />
     </v-content>
-    <v-footer app>
+    <v-footer app style="z-index: 200;">
       <span>&copy; 2018</span>
     </v-footer>
   </v-app>

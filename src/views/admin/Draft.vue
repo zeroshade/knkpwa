@@ -1,104 +1,55 @@
 <template>
   <v-layout wrap>
     <v-flex xs10 class='pl-2'>
-      <v-sheet height='850px'>
-        <draft-calendar
+      <v-sheet height='100%' class='mb-3'>
+        <draft-calendar v-if='schedule'
           :start='schedule.dayStart.format("YYYY-MM-DD")'
           :end='schedule.dayEnd.format("YYYY-MM-DD")'
           :colorMap='schedule.colorMap' :eventMap='eventMap'
           v-on:click:interval='showDialog($event.date, $event.time)'
-          v-on:click:event='editEvent = $event; deleteDialog = true;'>
+          v-on:click:event='editDraft($event)'>
           <template slot-scope='{ev}'>
             {{ ev.title }}<br />{{ ev.room }}
           </template>
         </draft-calendar>
       </v-sheet>
     </v-flex>
-    <v-dialog persistent v-model='dialog' max-width='500'>
-      <v-form ref='form' v-model='valid' lazy-validation>
-        <v-card>
-          <v-card-title class='headline' primary-title>
-            Add To Draft -- {{ editEvent.start.format('ddd') }}
-          </v-card-title>
-          <v-divider />
-          <v-card-text>
-            <v-layout wrap>
-              <v-flex xs8>
-                <v-text-field label='Title'
-                  v-model='editEvent.title'
-                  :rules='[required]'
-                />
-              </v-flex>
-              <v-flex xs5>
-                <v-combobox label='Room'
-                  v-model='editEvent.room'
-                  :items='roomList'
-                  :rules='[required]' />
-              </v-flex>
-              <v-flex xs5 offset-xs1>
-                <v-combobox label='Organizer'
-                  :value='editEvent.organizer ? editEvent.organizer.split(",").map(o => o.trim()) : editEvent.organizer'
-                  @input='editEvent.organizer = $event.join(", ")'
-                  :items='organizerList'
-                  multiple
-                  chips
-                  :rules='[required]' />
-              </v-flex>
-              <v-flex xs5>
-                <time-menu
-                  label='Start'
-                  v-model='startTime' />
-              </v-flex>
-              <v-flex xs5 offset-xs1>
-                <time-menu label='End' v-model='endTime' />
-              </v-flex>
-              <v-flex xs6>
-                <v-text-field label='icon' v-model='editEvent.icon' />
-              </v-flex>
-              <v-flex xs4 offset-xs1>
-                <v-icon large v-if='editEvent.icon'>{{ editEvent.icon }}</v-icon>
-              </v-flex>
-              <v-flex xs12>
-                <v-textarea label='Description' v-model='editEvent.desc' />
-              </v-flex>
-            </v-layout>
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer />
-            <v-btn color='warning' @click='dialog = false'>Cancel</v-btn>
-            <v-btn color='success' :disabled='!this.valid'
-              @click='addToDraft()'>Save</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-form>
-    </v-dialog>
-    <v-dialog persistent v-model='deleteDialog' max-width='500'>
+    <v-dialog persistent v-model='notifyDialog' max-width='500'>
       <v-card>
         <v-card-title class='headline' primary-title>
-          Remove From Draft
+          Notification
         </v-card-title>
-        <v-card-text v-if='!editEvent.draft'>
+        <v-card-text>
           You can only remove Draft Events this way. Use the event list to remove
           this event.
         </v-card-text>
-        <v-card-text v-else>
-          <p>Choose <em class='success white--text'>Delete</em> to delete this event from the draft.</p>
-          <p>Choose <em class='info white--text'>Publish</em> to move the event to the actual event list and
-            have it show up on the public calendar</p>
-        </v-card-text>
         <v-card-actions>
-          <v-btn class='info' :disabled='!editEvent.draft'
-            @click='publishEvent(editEvent); deleteDialog = false;'>Publish</v-btn>
           <v-spacer />
-          <v-btn class='warning' @click='deleteDialog = false'>Cancel</v-btn>
-          <v-btn :disabled='!editEvent.draft'
-            class='success'
-            @click='removeDraftEvent(editEvent); deleteDialog = false;'>
-              Delete
-            </v-btn>
+          <v-btn class='warning' @click='notifyDialog = false'>Cancel</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <edit-event ref='editform' :day-list='dayList' :room-list='roomList' :organizer-list='organizerList'
+      :show.sync='dialog' v-model='editEvent' @save='saveDraft()'>
+      <template slot='header'>
+        Edit Event <v-spacer />
+        <v-tooltip bottom>
+          <template v-slot:activator='{ on }'>
+            <v-btn flat icon color='red' v-if='editEvent.id !== 0' v-on='on'
+              @click='dialog = false; removeDraftEvent(editEvent);'>
+              <v-icon>delete</v-icon>
+            </v-btn>
+          </template>
+          <span>Delete</span>
+        </v-tooltip>
+      </template>
+      <template slot='left-actions'>
+        <v-btn class='info' :disabled='editEvent.id === 0 || ($refs.editform && !$refs.editform.valid)'
+          @click='$refs.editform.save(); publishEvent(editEvent);'>
+          Save &amp; Publish
+        </v-btn>
+      </template>
+    </edit-event>
   </v-layout>
 </template>
 
@@ -106,7 +57,7 @@
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { Schedule } from '@/api/schedule';
 import DraftCalendar from '@/components/admin/Calendar.vue';
-import TimeMenu from '@/components/admin/TimeMenu.vue';
+import EditEvent from '@/components/admin/EditEvent.vue';
 import { Event } from '@/api/event';
 import { Action, Getter } from 'vuex-class';
 import moment from 'moment';
@@ -114,7 +65,7 @@ import moment from 'moment';
 @Component({
   components: {
     DraftCalendar,
-    TimeMenu,
+    EditEvent,
   },
 })
 export default class Draft extends Vue {
@@ -127,31 +78,11 @@ export default class Draft extends Vue {
   @Action('admin/publishEvent') public publishEvent!: (ev: Event) => Promise<void>;
 
   public dialog = false;
-  public deleteDialog = false;
-  public valid = true;
-  public menu = false;
+  public notifyDialog = false;
   public editEvent: Event = new Event();
 
-  public required = (v: string) => !!v || 'Cannot be empty';
-
   public mounted() {
-    this.loadDraft(this.schedule.id);
-  }
-
-  public get startTime(): string {
-    return this.editEvent.start.format('HH:mm');
-  }
-
-  public set startTime(val: string) {
-    this.editEvent.start = moment(this.editEvent.start.format('YYYY-MM-DD ') + val, 'YYYY-MM-DD HH:mm');
-  }
-
-  public get endTime(): string {
-    return this.editEvent.end.format('HH:mm');
-  }
-
-  public set endTime(val: string) {
-    this.editEvent.end = moment(this.editEvent.end.format('YYYY-MM-DD ') + val, 'YYYY-MM-DD HH:mm');
+    this.loadDraft(+this.$route.params.id);
   }
 
   public showDialog(date: string, time: string) {
@@ -161,16 +92,24 @@ export default class Draft extends Vue {
     this.editEvent.clear();
     this.editEvent.id = 0;
     this.editEvent.draft = true;
-    this.endTime = this.editEvent.end.format('H:mm');
     this.dialog = true;
   }
 
-  public addToDraft() {
-    const form = this.$refs.form as HTMLFormElement;
-    if (!form.validate()) { return; }
-    const e = new Event(this.editEvent.getIEvent());
-    this.addDraftEvent(e);
-    this.dialog = false;
+  public saveDraft() {
+    this.addDraftEvent(this.editEvent);
+  }
+
+  public editDraft(ev: Event) {
+    this.editEvent = ev;
+    if (this.editEvent.draft) {
+      this.dialog = true;
+    } else {
+      this.notifyDialog = true;
+    }
+  }
+
+  public get dayList(): Array<{ day: string, date: string }> {
+    return this.schedule.dateRange().map((m) => ({ day: m.format('ddd'), date: m.format('YYYY-MM-DD') }));
   }
 
   public get roomList(): string[] {

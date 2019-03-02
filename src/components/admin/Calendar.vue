@@ -14,8 +14,8 @@
       <div class='interval' @click='$emit("click:interval", {date, time})'></div>
     </template>
     <template slot='dayBody' slot-scope='{ date, timeToY, minutesToPixels }'>
-      <template v-for='e in orderEvents(eventMap[date])'>
-        <v-layout row justify-center class='evblock'>
+      <template v-for='(e, idx) in orderEvents(eventMap[date] || [])'>
+        <v-layout row justify-center class='evblock' :style='{ zIndex: 100 + -1 * idx }'>
           <template v-for='col in eventCols(e)'>
             <v-flex class='evcol' :style='{
               top: timeToY(col[0].start.format("HH:mm")) + "px" }'>
