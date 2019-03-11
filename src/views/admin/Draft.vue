@@ -1,10 +1,10 @@
 <template>
   <v-layout wrap>
-    <v-flex xs10 class='pl-2'>
+    <v-flex xs12 class='pl-2'>
       <v-sheet height='100%' class='mb-3'>
         <draft-calendar v-if='schedule'
           :start='schedule.dayStart.format("YYYY-MM-DD")'
-          :end='schedule.dayEnd.format("YYYY-MM-DD")'
+          :end='schedule.dayEnd.clone().add(1, "d").format("YYYY-MM-DD")'
           :colorMap='schedule.colorMap' :eventMap='eventMap'
           v-on:click:interval='showDialog($event.date, $event.time)'
           v-on:click:event='editDraft($event)'>
@@ -71,7 +71,6 @@ import moment from 'moment';
 export default class Draft extends Vue {
   @Prop(Object) public schedule!: Schedule;
   @Prop(Array) public events!: Event[];
-  @Action('admin/loadDraft') public loadDraft!: (id: number) => Promise<void>;
   @Getter('admin/draft') public draftEvents!: Event[];
   @Action('admin/addDraftEvent') public addDraftEvent!: (ev: Event) => Promise<void>;
   @Action('admin/removeDraftEvent') public removeDraftEvent!: (ev: Event) => Promise<void>;
@@ -80,10 +79,6 @@ export default class Draft extends Vue {
   public dialog = false;
   public notifyDialog = false;
   public editEvent: Event = new Event();
-
-  public mounted() {
-    this.loadDraft(+this.$route.params.id);
-  }
 
   public showDialog(date: string, time: string) {
     this.editEvent = new Event();
@@ -109,7 +104,9 @@ export default class Draft extends Vue {
   }
 
   public get dayList(): Array<{ day: string, date: string }> {
-    return this.schedule.dateRange().map((m) => ({ day: m.format('ddd'), date: m.format('YYYY-MM-DD') }));
+    const list = this.schedule.dateRange();
+    list.push(list[list.length - 1].clone().add(1, 'd'));
+    return list.map((m) => ({ day: m.format('ddd'), date: m.format('YYYY-MM-DD') }));
   }
 
   public get roomList(): string[] {

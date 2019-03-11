@@ -24,16 +24,21 @@
                 :items='organizerList' multiple chips :rules='[required]' />
             </v-flex>
             <v-flex xs3>
-              <v-select label='Day' v-model='day'
+              <v-select label='Start Day' v-model='startDay'
                 :rules='[required]'
                 :items='dayList' item-text='day' item-value='date' />
             </v-flex>
-            <v-flex xs3 offset-xs1>
+            <v-flex xs3 offset-xs4>
               <time-menu label='Start' v-model='startTime'
                 :rules='[v => saved.start.isBefore(saved.end) || "Cant start before end"]'
               />
             </v-flex>
-            <v-flex xs3 offset-xs1>
+            <v-flex xs3>
+              <v-select label='End Day' v-model='endDay'
+                :items='dayList' :rules='[required]'
+                item-text='day' item-value='date' />
+            </v-flex>
+            <v-flex xs3 offset-xs4>
               <time-menu label='End' v-model='endTime'
                 :rules='[v => saved.end.isAfter(saved.start) || "Cant start before end"]'
               />
@@ -89,15 +94,24 @@ export default class EditEvent extends Vue {
   public readonly timeFmt = 'HH:mm';
   public required = (v: string) => !!v || 'Cannot be empty';
 
-  public get day(): string {
+  public get startDay(): string {
     return this.saved.start.format(this.dateFmt);
   }
 
-  public set day(val: string) {
+  public set startDay(val: string) {
     const duration = this.saved.duration;
     const newday = moment(val, this.dateFmt);
     this.saved.start = this.saved.start.clone().year(newday.year()).dayOfYear(newday.dayOfYear());
     this.saved.end = this.saved.start.clone().add(duration);
+  }
+
+  public get endDay(): string {
+    return this.saved.end.format(this.dateFmt);
+  }
+
+  public set endDay(val: string) {
+    const newday = moment(val, this.dateFmt);
+    this.saved.end = this.saved.end.clone().year(newday.year()).dayOfYear(newday.dayOfYear());
   }
 
   public get startTime(): string {

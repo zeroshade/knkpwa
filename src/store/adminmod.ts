@@ -71,11 +71,12 @@ const adminModule: Module<AdminState, RootState> = {
     },
   },
   actions: {
-    async loadSchedById({ commit }, id: number) {
+    async loadSchedById({ commit, dispatch }, id: number) {
       const s = await sched.getSchedule(id);
       commit('setSched', s);
       const e = await event.getEvents(id);
       commit('setEvents', e);
+      await dispatch('loadDraft', id);
     },
     async deleteSchedule({ dispatch }, id: number) {
       await dispatch('auth/makeAuthedRequest', {

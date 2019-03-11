@@ -20,7 +20,7 @@
             <v-flex class='evcol' :style='{
               top: timeToY(col[0].start.format("HH:mm")) + "px" }'>
               <template v-for='{ev, margin} in colItems(col, minutesToPixels)'>
-                <v-tooltip top z-index='3'>
+                <v-tooltip top z-index='3000'>
                   <v-sheet slot='activator' @click.native='$emit("click:event", ev)'
                     :key='ev.title' :color='colorMap[ev.room] || colorMap.other'
                     :height='minutesToPixels(ev.duration.asMinutes())'
@@ -84,7 +84,8 @@ export default class Calendar extends Vue {
 
   .evcol
     position relative
-    width 100%
+    width 70px
+
 
   & div:not(:first-child)
     margin-left 5px
@@ -111,4 +112,5 @@ export default class Calendar extends Vue {
 
 .lock
   background-color transparent
+  float right
 </style>

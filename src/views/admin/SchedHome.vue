@@ -51,7 +51,7 @@
 <script lang='ts'>
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { Schedule } from '@/api/schedule';
-import { Action } from 'vuex-class';
+import { Action, Getter } from 'vuex-class';
 import { Event } from '@/api/event';
 import ColorChooser from '@/components/admin/ColorChooser.vue';
 
@@ -65,6 +65,7 @@ export default class AdminScheduleHome extends Vue {
   @Prop(Array) public events!: Event[];
   @Action('admin/updateSchedule') public updateSchedule!: (s: Schedule) => Promise<void>;
   @Action('admin/deleteSchedule') public deleteSchedule!: (id: number) => Promise<void>;
+  @Getter('admin/draft') public draftEvents!: Event[];
 
   public dialog = false;
   public tempColor = '';
@@ -85,8 +86,8 @@ export default class AdminScheduleHome extends Vue {
   }
 
   public get rooms(): string[] {
-    const rooms = new Set(this.events.map((e) => e.room));
-    const ret = Array.from(rooms).sort();
+    const ret = Array.from(new Set([...this.events.map((e) => e.room),
+      ...this.draftEvents.map((e) => e.room)])).sort();
     ret.push('other');
     return ret;
   }
