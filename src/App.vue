@@ -2,7 +2,7 @@
   <v-app dark id='schedule'>
     <nav-bar v-model='drawer' />
     <toolbar v-model='drawer' />
-    <v-content fill-height class="grey darken-3">
+    <v-content fill-height :class='background'>
       <router-view />
       <event-dialog :width='500' />
     </v-content>
@@ -29,6 +29,7 @@ import EventDialog from '@/components/EventDialog.vue';
 export default class Layout extends Vue {
   @Getter('auth/admin') public isAdmin!: boolean;
 
+  public readonly background = process.env.VUE_APP_BACKGROUND;
   public drawer = null;
 }
 </script>

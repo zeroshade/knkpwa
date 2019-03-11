@@ -1,11 +1,11 @@
 <template>
-  <v-toolbar dense tabs color='blue-grey darken-3' app>
+  <v-toolbar dense tabs :color='color' app>
     <v-toolbar-side-icon aria-label='menu' @click.stop='$emit("input", !value)'>
       <v-icon>menu</v-icon>
     </v-toolbar-side-icon>
     <v-toolbar-title>Kith &amp; Kink Schedule -- {{ curSchedule ? curSchedule.title : '' }}</v-toolbar-title>
     <v-spacer />
-    <v-btn round color='blue-grey darken-4' v-if='!authenticated' @click='login()'>Login / Sign Up</v-btn>
+    <v-btn round :color='btncolor' v-if='!authenticated' @click='login()'>Login / Sign Up</v-btn>
     <template v-else>
       <v-menu :nudge-width='200' offset-overflow left v-model='menu' :close-on-content-click='false'>
         <v-avatar slot='activator' class='mt-1' :tile='false' size='38' color='grey lighten-4'>
@@ -50,7 +50,7 @@
         </v-card>
       </v-menu>
     </template>
-    <v-tabs slot='extension' centered grow color='blue-grey darken-3' slider-color='purple darken-1'>
+    <v-tabs slot='extension' centered grow :color='color' :slider-color='slider'>
       <v-tab :to='{ name: "agenda", params: $route.params }'>Agenda</v-tab>
       <v-tab :to='{ name: "rooms", params: $route.params }'>Room View</v-tab>
       <v-tab :to='{ name: "events", params: $route.params }'>Event View</v-tab>
@@ -93,6 +93,10 @@ export default class Toolbar extends Vue {
   @Getter('auth/nickname') public nickname!: string;
   @Getter('auth/admin') public isAdmin!: boolean;
   @Getter('curSchedule') public curSchedule!: Schedule;
+
+  public readonly color = process.env.VUE_APP_TOOLBAR_COLOR;
+  public readonly btncolor = process.env.VUE_APP_LOGIN_COLOR;
+  public readonly slider = process.env.VUE_APP_SLIDER_COLOR;
 
   public menu = false;
   public notifPermission = false;

@@ -3,7 +3,7 @@
     <template v-if='$vuetify.breakpoint.mdAndUp'>
       <v-flex v-for='(c, k) in cols' :key='k' d-block
         class='event-group mb-0' :style='{ height: height + "px"}'>
-        <v-card flat tile class='colheader' color='grey darken-4'>
+        <v-card flat tile class='colheader' :color='header'>
           <v-card-title>
             <span class='text-xs-center'>
               <slot name='header' v-bind:title='k'></slot>
@@ -31,7 +31,7 @@
     <template v-else>
       <v-flex class='event-group mb-0' d-block xs12 :style='{height: height + "px"}'>
         <v-menu offset-y class='colheader'>
-          <v-card color='deep-orange darken-3' flat tile slot='activator' :height='pixelHeight - 1 + "px"'>
+          <v-card :color='header' flat tile slot='activator' :height='pixelHeight - 1 + "px"'>
             <v-card-title>
               <span class='text-xs-center'>
                 <slot name='header' v-bind:title='showcol'></slot> <v-icon dark>expand_more</v-icon>
@@ -85,6 +85,7 @@ export default class Schedule extends Vue {
   @Prop(Number) public height!: number;
   @Prop(Object) public colorMap!: {[index: string]: string};
 
+  public readonly header = process.env.VUE_APP_HEADER_COLOR;
   public theCol = '';
 
   public get showcol(): string {
