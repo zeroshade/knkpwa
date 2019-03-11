@@ -2,7 +2,7 @@ import Vue from 'vue';
 import VueRouter, { Route } from 'vue-router';
 Vue.use(VueRouter);
 
-const props = (route: Route) => ({ id: +route.params.id || 3 });
+const props = (route: Route) => ({ id: +route.params.id || 5 });
 
 export default new VueRouter({
   mode: 'history',

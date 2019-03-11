@@ -2,7 +2,7 @@
   <v-app dark id='schedule'>
     <nav-bar v-model='drawer' />
     <toolbar v-model='drawer' />
-    <v-content fill-height class="amber darken-4">
+    <v-content fill-height class="grey darken-3">
       <router-view />
       <event-dialog :width='500' />
     </v-content>

@@ -14,7 +14,7 @@ export default class Auth extends Vue {
 
   public mounted() {
     this.handleAuth();
-    this.$router.push({ name: 'home' });
+    this.$router.push({ name: 'rooms' });
   }
 }
 </script>

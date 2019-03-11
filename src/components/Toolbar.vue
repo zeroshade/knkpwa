@@ -1,11 +1,11 @@
 <template>
-  <v-toolbar dense tabs color='orange' app>
+  <v-toolbar dense tabs color='blue-grey darken-3' app>
     <v-toolbar-side-icon aria-label='menu' @click.stop='$emit("input", !value)'>
       <v-icon>menu</v-icon>
     </v-toolbar-side-icon>
-    <v-toolbar-title>Kith &amp; Kink Schedule</v-toolbar-title>
+    <v-toolbar-title>Kith &amp; Kink Schedule -- {{ curSchedule ? curSchedule.title : '' }}</v-toolbar-title>
     <v-spacer />
-    <v-btn round color='orange darken-4' v-if='!authenticated' @click='login()'>Login / Sign Up</v-btn>
+    <v-btn round color='blue-grey darken-4' v-if='!authenticated' @click='login()'>Login / Sign Up</v-btn>
     <template v-else>
       <v-menu :nudge-width='200' offset-overflow left v-model='menu' :close-on-content-click='false'>
         <v-avatar slot='activator' class='mt-1' :tile='false' size='38' color='grey lighten-4'>
@@ -50,7 +50,7 @@
         </v-card>
       </v-menu>
     </template>
-    <v-tabs slot='extension' centered grow color='orange' slider-color='yellow'>
+    <v-tabs slot='extension' centered grow color='blue-grey darken-3' slider-color='purple darken-1'>
       <v-tab :to='{ name: "agenda", params: $route.params }'>Agenda</v-tab>
       <v-tab :to='{ name: "rooms", params: $route.params }'>Room View</v-tab>
       <v-tab :to='{ name: "events", params: $route.params }'>Event View</v-tab>
@@ -61,6 +61,7 @@
 <script lang='ts'>
 import { Component, Prop, Watch, Vue } from 'vue-property-decorator';
 import { Getter, Action } from 'vuex-class';
+import { Schedule } from '@/api/schedule';
 
 function urlB64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -91,6 +92,7 @@ export default class Toolbar extends Vue {
   @Getter('auth/username') public username!: string;
   @Getter('auth/nickname') public nickname!: string;
   @Getter('auth/admin') public isAdmin!: boolean;
+  @Getter('curSchedule') public curSchedule!: Schedule;
 
   public menu = false;
   public notifPermission = false;

@@ -3,7 +3,7 @@
     <template v-if='$vuetify.breakpoint.mdAndUp'>
       <v-flex v-for='(c, k) in cols' :key='k' d-block
         class='event-group mb-0' :style='{ height: height + "px"}'>
-        <v-card flat tile class='colheader' color='deep-orange darken-3'>
+        <v-card flat tile class='colheader' color='grey darken-4'>
           <v-card-title>
             <span class='text-xs-center'>
               <slot name='header' v-bind:title='k'></slot>
