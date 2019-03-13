@@ -33,20 +33,19 @@
       :show.sync='dialog' v-model='editEvent' @save='saveDraft()'>
       <template slot='header'>
         Edit Event <v-spacer />
-        <v-tooltip bottom>
-          <template v-slot:activator='{ on }'>
-            <v-btn flat icon color='red' v-if='editEvent.id !== 0' v-on='on'
-              @click='dialog = false; removeDraftEvent(editEvent);'>
-              <v-icon>delete</v-icon>
-            </v-btn>
-          </template>
-          <span>Delete</span>
-        </v-tooltip>
+        <v-btn flat icon color='red' v-if='editEvent.id !== 0'
+          @click='dialog = false; removeDraftEvent(editEvent);'>
+          <v-icon>delete</v-icon>
+        </v-btn>
       </template>
       <template slot='left-actions'>
         <v-btn class='info' :disabled='editEvent.id === 0 || ($refs.editform && !$refs.editform.valid)'
           @click='$refs.editform.save(); publishEvent(editEvent);'>
           Save &amp; Publish
+        </v-btn>
+        <v-btn color='blue-grey' class='white--text' :disabled='editEvent.id === 0 || ($refs.editform && !$refs.editform.valid)'
+          @click='$refs.editform.save(); dupEvent();'>
+          Duplicate
         </v-btn>
       </template>
     </edit-event>
@@ -92,6 +91,12 @@ export default class Draft extends Vue {
 
   public saveDraft() {
     this.addDraftEvent(this.editEvent);
+  }
+
+  public async dupEvent() {
+    this.editEvent = new Event(this.editEvent.getIEvent());
+    this.editEvent.id = 0;
+    await this.saveDraft();
   }
 
   public editDraft(ev: Event) {
