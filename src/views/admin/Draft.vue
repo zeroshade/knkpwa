@@ -17,13 +17,17 @@
     <v-dialog persistent v-model='notifyDialog' max-width='500'>
       <v-card>
         <v-card-title class='headline' primary-title>
-          Notification
+          {{ editEvent.title }}
         </v-card-title>
         <v-card-text>
           You can only remove Draft Events this way. Use the event list to remove
           this event.
         </v-card-text>
         <v-card-actions>
+          <v-btn color='blue-grey' class='white--text'
+            @click='notifyDialog = false; dupEvent();'>
+            Duplicate
+          </v-btn>
           <v-spacer />
           <v-btn class='warning' @click='notifyDialog = false'>Cancel</v-btn>
         </v-card-actions>
@@ -44,7 +48,7 @@
           Save &amp; Publish
         </v-btn>
         <v-btn color='blue-grey' class='white--text' :disabled='editEvent.id === 0 || ($refs.editform && !$refs.editform.valid)'
-          @click='$refs.editform.save(); dupEvent();'>
+          @click='$refs.editform.$emit("update:show", false); dupEvent();'>
           Duplicate
         </v-btn>
       </template>
@@ -93,10 +97,14 @@ export default class Draft extends Vue {
     this.addDraftEvent(this.editEvent);
   }
 
-  public async dupEvent() {
-    this.editEvent = new Event(this.editEvent.getIEvent());
-    this.editEvent.id = 0;
-    await this.saveDraft();
+  public dupEvent() {
+    const ievent = this.editEvent.getIEvent();
+    ievent.id = 0;
+    this.editEvent = new Event(ievent);
+    this.editEvent.draft = true;
+    Vue.nextTick(() => {
+      this.dialog = true;
+    });
   }
 
   public editDraft(ev: Event) {
