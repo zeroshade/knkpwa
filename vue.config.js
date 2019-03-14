@@ -34,7 +34,7 @@ module.exports = {
           inject: true,
           short_name: 'KnK',
           background_color: '#0E8DF1',
-          theme_color: '#F68043',
+          theme_color: '#607D8B',
           start_url: '/',
           icons: [
             {
@@ -79,10 +79,10 @@ module.exports = {
   pwa: {
     workboxPluginMode: 'InjectManifest',
     name: 'KnK Sched',
-    themeColor: '#F68043',
+    themeColor: '#607D8B',
     msTileColor: '#0E8DF1',
     appleMobileWebAppCapable: 'yes',
-    assetsVersion: '4',
+    assetsVersion: '5',
     manifestPath: 'manifest.json',
     workboxOptions: {
       swSrc: 'src/service-worker.js',

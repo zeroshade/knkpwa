@@ -2,8 +2,8 @@
   <v-dialog v-model='visible' :width='width'>
     <v-card v-if='modalEvent'>
       <v-card-title :class='`${modalColor} headline`' primary-title>
-        <v-icon v-if='modalEvent.icon' dark>{{ modalEvent.icon }}</v-icon>
-        {{ modalEvent.title }}
+        <v-icon v-if='modalEvent.icon' class='pr-1' dark>{{ modalEvent.icon }}</v-icon>
+        <span style='width: 75%'>{{ modalEvent.title }}</span>
         <v-spacer />
         <v-btn icon @click='toggleFav(modalEvent.id)' v-if='authenticated'>
           <v-icon>{{ userfavs.includes(modalEvent.id) ? 'star' : 'star_border' }}</v-icon>
