@@ -3,7 +3,9 @@
     <nav-bar v-model='drawer' />
     <toolbar v-model='drawer' />
     <v-content fill-height :class='background'>
-      <router-view />
+      <div style='overflow-x: auto' class='d-flex'>
+        <router-view class='sched-content' />
+      </div>
       <event-dialog :width='500' />
     </v-content>
     <v-footer app>

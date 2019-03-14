@@ -42,3 +42,9 @@ export default class Agenda extends Mixins(GridMixin) {
   }
 }
 </script>
+
+<style lang='styl' scoped>
+.sched-content
+  min-width 700px
+
+</style>

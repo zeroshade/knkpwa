@@ -83,7 +83,7 @@ export default class EventBlock extends Vue {
   position relative
   pointer-events auto
   height 100%
-  min-width 20px
+  min-width 40px
 
   .entry
     cursor pointer
