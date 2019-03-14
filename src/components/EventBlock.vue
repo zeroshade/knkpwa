@@ -30,7 +30,7 @@ export default class EventBlock extends Vue {
   @Prop(Object) public colorMap!: {[index: string]: string};
 
   public eventHeight(ev: Event): number {
-    return ev.duration.asMinutes() / 30 * this.pixelHeight - 1;
+    return ev.duration.asMinutes() / 30 * this.pixelHeight - 5;
   }
 
   public flexStyle(ev: Event): {[index: string]: string|number} {
@@ -47,7 +47,7 @@ export default class EventBlock extends Vue {
 
       for (const c of cols) {
         const lastEvent = c[c.length - 1];
-        if (ev.start.isAfter(lastEvent.end)) {
+        if (ev.start.isSameOrAfter(lastEvent.end)) {
           c.push(ev);
           placed = true;
           break;
@@ -66,7 +66,7 @@ export default class EventBlock extends Vue {
         continue;
       }
       const lastEvent = res[res.length - 1].ev;
-      res.push({ev, margin: this.pixelHeight * (ev.start.diff(lastEvent.end, 'minutes') / 30)});
+      res.push({ev, margin: this.pixelHeight * (ev.start.diff(lastEvent.end, 'minutes') / 30) + 5});
     }
     return res;
   }

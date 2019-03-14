@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid :style='{ height: gridHeight + 100 + "px"}'>
+  <v-container fluid class='sched-content' :style='{ height: gridHeight + 100 + "px"}'>
     <v-layout style='position: relative'>
       <time-grid :times='times' :pixel-height='pixelHeight' v-if='sched' />
       <schedule-view v-if='this.sched' :pixel-height='pixelHeight'

@@ -4,7 +4,7 @@
     <toolbar v-model='drawer' />
     <v-content fill-height :class='background'>
       <div style='overflow-x: auto' class='d-flex'>
-        <router-view class='sched-content' />
+        <router-view />
       </div>
       <event-dialog :width='500' />
     </v-content>
