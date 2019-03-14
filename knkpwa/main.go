@@ -8,7 +8,8 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-	"time"
+
+	. "github.com/zeroshade/knkpwa/knkpwa/models"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/static"
@@ -19,12 +20,6 @@ import (
 
 	webpush "github.com/SherClockHolmes/webpush-go"
 )
-
-var loc *time.Location
-
-func init() {
-	loc, _ = time.LoadLocation("America/New_York")
-}
 
 func ServeFile(urlPrefix, root string) gin.HandlerFunc {
 	fs := static.LocalFile(root, false)

@@ -1,9 +1,15 @@
-package main
+package models
 
 import (
 	"encoding/json"
 	"time"
 )
+
+var loc *time.Location
+
+func init() {
+	loc, _ = time.LoadLocation("America/New_York")
+}
 
 type Event struct {
 	ID         uint      `json:"id"`
