@@ -105,10 +105,10 @@ func main() {
 		data := v.(map[string]interface{})
     if data["user_metadata"] != nil {
       user_id := data["user_id"].(string)
-      fmt.Println(data["name"].(string))
-      fmt.Println(user_id)
+      //fmt.Println(data["name"].(string))
+      //fmt.Println(user_id)
       user_metadata := data["user_metadata"].(map[string]interface{})
-      fmt.Println(user_metadata)
+      //fmt.Println(user_metadata)
 
       favs := user_metadata["favs"].([]interface{})
       idToFavs[user_id] = make([]int, 0, len(favs))
@@ -124,7 +124,7 @@ func main() {
       }
     }
 	}
-	fmt.Println(idToFavs)
+	//fmt.Println(idToFavs)
 
   db, err := gorm.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
     os.Getenv("DB_USER"), os.Getenv("DB_PASS"), os.Getenv("DB_HOST"), os.Getenv("DB_NAME")))
