@@ -126,7 +126,7 @@ func main() {
 	}
 	//fmt.Println(idToFavs)
 
-  db, err := gorm.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
+  db, err := gorm.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=America%2FNew_York",
     os.Getenv("DB_USER"), os.Getenv("DB_PASS"), os.Getenv("DB_HOST"), os.Getenv("DB_NAME")))
   if err != nil {
     log.Fatal("Could not connect to DB", err)
@@ -146,7 +146,6 @@ func main() {
 
     for _, e := range evs {
       t := resolveTime(e.Start, e.Day)
-      log.Println(time.Now().In(e.Day.Location()))
       d := t.Sub(time.Now().In(e.Day.Location()))
       if d.Minutes() > 0 && d.Minutes() <= 10 {
         n, err := json.Marshal(createNotif(d, &e))
