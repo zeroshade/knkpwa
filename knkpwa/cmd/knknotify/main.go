@@ -146,6 +146,7 @@ func main() {
 
     for _, e := range evs {
       t := resolveTime(e.Start, e.Day)
+      log.Println(time.Now().In(e.Day.Location()))
       d := t.Sub(time.Now().In(e.Day.Location()))
       if d.Minutes() > 0 && d.Minutes() <= 10 {
         n, err := json.Marshal(createNotif(d, &e))
