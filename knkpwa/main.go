@@ -51,7 +51,7 @@ func main() {
 		log.Fatal("$PORT must be set")
 	}
 
-	db, err := gorm.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=America%2FNew_York",
+	db, err := gorm.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=America%%2FNew_York",
 		os.Getenv("DB_USER"), os.Getenv("DB_PASS"), os.Getenv("DB_HOST"), os.Getenv("DB_NAME")))
 	if err != nil {
 		log.Fatal("Could not connect to DB", err)
