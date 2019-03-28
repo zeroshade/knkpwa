@@ -146,9 +146,13 @@ func main() {
 
     for _, e := range evs {
       t := resolveTime(e.Start, e.Day)
-      d := time.Until(t)
+      d := t.Sub(time.Now().In(e.Day.Location()))
       if d.Minutes() > 0 && d.Minutes() <= 10 {
-        n, _ := json.Marshal(createNotif(d, &e))
+        n, err := json.Marshal(createNotif(d, &e))
+        if err != nil {
+          log.Println(err)
+          continue
+        }
         resp, err := webpush.SendNotification(n, &sub.SubJSON, &webpush.Options{
           Subscriber: "zotthewizard@gmail.com",
           VAPIDPrivateKey: vapidPrivateKey,
