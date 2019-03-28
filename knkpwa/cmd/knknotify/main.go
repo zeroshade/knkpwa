@@ -7,6 +7,15 @@ import (
 	"net/http"
 	"os"
 	"strings"
+  "log"
+  "time"
+
+  "github.com/zeroshade/knkpwa/knkpwa/models"
+
+  "github.com/jinzhu/gorm"
+  _ "github.com/jinzhu/gorm/dialects/mysql"
+
+  webpush "github.com/SherClockHolmes/webpush-go"
 )
 
 func getAccessToken(clientId, clientSecret, aud, url string) (string, error) {
@@ -61,6 +70,26 @@ func getUserList(token string) (data []interface{}, err error) {
 	return
 }
 
+func resolveTime(start string, day time.Time) time.Time {
+  t, _ := time.ParseInLocation("3:04 PM", start, day.Location())
+  if t.Hour() <= 3 {
+    day = day.AddDate(0, 0, 1)
+  }
+  y, m, d := day.Date()
+  return time.Date(y, m, d, t.Hour(), t.Minute(), 0, 0, t.Location())
+}
+
+type Notif struct {
+  Message string `json:"body"`
+  Title string `json:"title"`
+}
+
+func createNotif(d time.Duration, ev *models.Event) (n Notif) {
+  n.Message = fmt.Sprintf("'%s' starting in %s in %.0f minutes!", ev.Name, ev.Room, d.Minutes())
+  n.Title = "Hey! Listen!"
+  return
+}
+
 func main() {
 	CLIENT_ID := os.Getenv("CLIENT_ID")
 	CLIENT_SECRET := os.Getenv("CLIENT_SECRET")
@@ -74,9 +103,63 @@ func main() {
 	idToFavs := make(map[string][]int)
 	for _, v := range users {
 		data := v.(map[string]interface{})
-		user_id := data["user_id"].(string)
-		user_metadata := data["user_metadata"].(map[string]interface{})
-		idToFavs[user_id] = user_metadata["favs"].([]int)
+    if data["user_metadata"] != nil {
+      user_id := data["user_id"].(string)
+      fmt.Println(data["name"].(string))
+      fmt.Println(user_id)
+      user_metadata := data["user_metadata"].(map[string]interface{})
+      fmt.Println(user_metadata)
+
+      favs := user_metadata["favs"].([]interface{})
+      idToFavs[user_id] = make([]int, 0, len(favs))
+      for _, i := range favs {
+        switch v := i.(type) {
+        case int:
+          idToFavs[user_id] = append(idToFavs[user_id], v)
+        case float64:
+          idToFavs[user_id] = append(idToFavs[user_id], int(v))
+        case float32:
+          idToFavs[user_id] = append(idToFavs[user_id], int(v))
+        }
+      }
+    }
 	}
 	fmt.Println(idToFavs)
+
+  db, err := gorm.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
+    os.Getenv("DB_USER"), os.Getenv("DB_PASS"), os.Getenv("DB_HOST"), os.Getenv("DB_NAME")))
+  if err != nil {
+    log.Fatal("Could not connect to DB", err)
+  }
+  defer db.Close()
+  db.AutoMigrate(&models.Subscription{}, &models.Event{})
+
+  vapidPrivateKey := os.Getenv("VAPID_PRIVATE_KEY")
+
+  var s []models.Subscription
+  db.Find(&s)
+
+  for _, sub := range s {
+    favs := idToFavs[sub.UserID]
+    var evs []models.Event
+    db.Find(&evs, favs)
+
+    for _, e := range evs {
+      t := resolveTime(e.Start, e.Day)
+      d := time.Until(t)
+      if d.Minutes() > 0 && d.Minutes() <= 10 {
+        n, _ := json.Marshal(createNotif(d, &e))
+        resp, err := webpush.SendNotification(n, &sub.SubJSON, &webpush.Options{
+          Subscriber: "zotthewizard@gmail.com",
+          VAPIDPrivateKey: vapidPrivateKey,
+        })
+
+        if err != nil {
+          log.Println(sub.UserID, err)
+        } else {
+          log.Println(fmt.Sprintf("Sent Notif to: %s For EV: %s, Status: %d", sub.UserID, e.Name, resp.StatusCode))
+        }
+      }
+    }
+  }
 }

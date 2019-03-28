@@ -82,7 +82,7 @@ module.exports = {
     themeColor: '#607D8B',
     msTileColor: '#0E8DF1',
     appleMobileWebAppCapable: 'yes',
-    assetsVersion: '5',
+    assetsVersion: '6',
     manifestPath: 'manifest.json',
     workboxOptions: {
       swSrc: 'src/service-worker.js',

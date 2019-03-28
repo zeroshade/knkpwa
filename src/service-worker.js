@@ -54,16 +54,15 @@ self.addEventListener('notificationclose', event => {
 });
 
 self.addEventListener('push', event => {
-  let body;
+  let obj;
   if (event.data) {
-    body = event.data.text();
-  } else {
-    body = 'Default push body!';
+    obj = event.data.json();
   }
 
   const options = {
-    body: body,
+    body: obj.body,
     icon: 'img/icons/icon_256x256.png',
+    vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),
       primaryKey: 1,
@@ -74,6 +73,6 @@ self.addEventListener('push', event => {
   };
 
   event.waitUntil(
-    self.registration.showNotification('Push Notification', options)
+    self.registration.showNotification(obj.title, options)
   );
 });
