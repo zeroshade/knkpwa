@@ -3,6 +3,7 @@ import './plugins/vuetify';
 import App from './App.vue';
 import router from './router';
 import store from './store';
+import VueAnalytics from 'vue-analytics';
 import './registerServiceWorker';
 import 'roboto-fontface/css/roboto/roboto-fontface.css';
 
@@ -15,6 +16,17 @@ Vue.filter('duration', (d: moment.Duration) => {
     ret = `${d.hours()}h ${ret}`;
   }
   return ret;
+});
+
+Vue.use(VueAnalytics, {
+  id: process.env.VUE_APP_UA_ID,
+  router,
+  debug: {
+    sendHitTask: process.env.NODE_ENV === 'production',
+  },
+  autoTracking: {
+    skipSamePath: true,
+  },
 });
 
 new Vue({

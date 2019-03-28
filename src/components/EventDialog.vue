@@ -51,6 +51,14 @@ export default class EventDialog extends Vue {
   @Action('auth/toggleFav') public toggleFav!: (id: number) => void;
   @Getter('auth/authenticated') public authenticated!: boolean;
 
+  public toggleStar(id: number): void {
+    if (this.modalEvent === null) { return; }
+
+    const action = (this.userfavs.includes(this.modalEvent.id)) ? 'addfav' : 'delfav';
+    this.$ga.event('events', action, this.modalEvent.title);
+    this.toggleFav(id);
+  }
+
   public get visible(): boolean {
     return this.$store.state.showModal;
   }

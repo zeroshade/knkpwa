@@ -8,7 +8,7 @@
           <v-card class='entry' slot-scope='{ hover }'
             :style='{ marginTop: margin + "px"}'
             :color='colorMap[ev.room] + (hover ? "lighten-1" : "")'
-            :height='eventHeight(ev)' @click='$store.commit("showModal", {ev, color: colorMap[ev.room]})'>
+            :height='eventHeight(ev)' @click='showEvent(ev, colorMap[ev.room])'>
             <slot v-bind:event='ev'>
             </slot>
           </v-card>
@@ -20,6 +20,7 @@
 
 <script lang='ts'>
 import { Component, Vue, Prop } from 'vue-property-decorator';
+import { Mutation } from 'vuex-class';
 import { Event } from '@/api/event';
 
 @Component
@@ -28,6 +29,12 @@ export default class EventBlock extends Vue {
   @Prop(Array) public events!: Event[];
   @Prop(Date) public day!: Date;
   @Prop(Object) public colorMap!: {[index: string]: string};
+  @Mutation('showModal') public showModal!: (payload: {ev: Event, color: string}) => void;
+
+  public showEvent(ev: Event, color: string): void {
+    this.$ga.event('events', 'showmodal', ev.title);
+    this.showModal({ev, color});
+  }
 
   public eventHeight(ev: Event): number {
     return ev.duration.asMinutes() / 30 * this.pixelHeight - 5;
