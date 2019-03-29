@@ -51,7 +51,7 @@
       </v-menu>
     </template>
     <v-tabs slot='extension' centered grow :color='color' :slider-color='slider'>
-      <v-tab :to='{ name: "agenda", params: $route.params }'>Agenda</v-tab>
+      <v-tab :to='{ name: "agenda", params: $route.params }'>Full View</v-tab>
       <v-tab :to='{ name: "rooms", params: $route.params }'>Room View</v-tab>
       <v-tab :to='{ name: "events", params: $route.params }'>Event View</v-tab>
     </v-tabs>

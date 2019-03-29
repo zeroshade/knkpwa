@@ -47,7 +47,7 @@ export default class RoomGrid extends Mixins(GridMixin) {
     return this.sched.times().slice((cols[Object.keys(cols)[0]].day.hours() - 12) * 2);
   }
 
-  public get roomCols() {
+  public get roomCols(): Array<{[index: string]: {day: moment.Moment, events: Event[][]}}> {
     if (!this.sched) { return []; }
     return this.dateRange.map((day: moment.Moment) => {
       const end = day.clone().add(this.sched.numHours, 'h');
@@ -60,9 +60,10 @@ export default class RoomGrid extends Mixins(GridMixin) {
             return acc;
           }, {});
 
+      const rooms = Object.keys(byRoom).sort();
       const ret: {[index: string]: {day: moment.Moment, events: Event[][]}} = {};
       let first = end;
-      for (const k of Object.keys(byRoom)) {
+      for (const k of rooms) {
         const events = event.orderEvents(byRoom[k]);
         if (events[0][0].start.isBefore(first)) {
           first = events[0][0].start;
