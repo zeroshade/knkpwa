@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Compression Constants
 const (
 	BestCompression    = gzip.BestCompression
 	BestSpeed          = gzip.BestSpeed
@@ -20,6 +21,8 @@ const (
 	NoCompression      = gzip.NoCompression
 )
 
+// Gzip Create a HandlerFunc of the specified compression level, only compressing
+//      things which are larger than the given minLength
 func Gzip(level, minLength int) gin.HandlerFunc {
 	var gzPool sync.Pool
 	gzPool.New = func() interface{} {

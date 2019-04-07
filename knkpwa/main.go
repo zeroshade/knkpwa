@@ -21,6 +21,7 @@ import (
 	webpush "github.com/SherClockHolmes/webpush-go"
 )
 
+// ServeFile Create HandlerFunc to serve up static files at the specified prefix
 func ServeFile(urlPrefix, root string) gin.HandlerFunc {
 	fs := static.LocalFile(root, false)
 	fileserver := http.FileServer(fs)
@@ -38,6 +39,7 @@ func ServeFile(urlPrefix, root string) gin.HandlerFunc {
 	}
 }
 
+// Notify struct for receiving requests to send notifications
 type Notify struct {
 	UserID  string `json:"userId" binding:"required"`
 	Message string `json:"message" binding:"required"`

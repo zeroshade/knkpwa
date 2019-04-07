@@ -10,17 +10,21 @@ import (
 )
 
 const (
-	JWKURI       = "https://knk.auth0.com/.well-known/jwks.json"
-	AUDIENCE     = "http://knk-backend.herokuapp.com/"
-	USER_API     = "https://knk.auth0.com/api/v2/"
-	AUTH0_DOMAIN = "https://knk.auth0.com/"
+	// JWKURI URI for JWK Token
+	JWKURI = "https://knk.auth0.com/.well-known/jwks.json"
+	// AUDIENCE Our backend audience definition
+	AUDIENCE = "http://knk-backend.herokuapp.com/"
+	// USERAPI the url for the user API communication
+	USERAPI = "https://knk.auth0.com/api/v2/"
+	// AUTH0DOMAIN the url for the auth0 domain
+	AUTH0DOMAIN = "https://knk.auth0.com/"
 )
 
 var validator *auth0.JWTValidator
 
 func init() {
 	client := auth0.NewJWKClient(auth0.JWKClientOptions{URI: JWKURI}, nil)
-	configuration := auth0.NewConfiguration(client, []string{USER_API}, AUTH0_DOMAIN, "RS256")
+	configuration := auth0.NewConfiguration(client, []string{USERAPI}, AUTH0DOMAIN, "RS256")
 	validator = auth0.NewValidator(configuration, nil)
 }
 
