@@ -9,9 +9,8 @@
   },
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint",
-    "postinstall": "if test \"$NODE_ENV\" = \"production\"; then yarn run build --modern; fi"
+    "build": "vue-cli-service build --modern",
+    "lint": "vue-cli-service lint"    
   },
   "dependencies": {
     "auth0-js": "^9.10.0",
