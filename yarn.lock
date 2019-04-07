@@ -693,6 +693,11 @@
   resolved "https://registry.yarnpkg.com/@types/auth0-js/-/auth0-js-8.11.11.tgz#c6e72f9b6c938c144cc4e022af175a1c20d52968"
   integrity sha512-uKwTZHPBTTZFZwQhSR2gCLeRdWnWKq3F2WJIllvJH9b//Jq8S541c+P42yur3obbjkp7BnqQ5gpCd6GLCpgRww==
 
+"@types/node@^11.13.0":
+  version "11.13.0"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-11.13.0.tgz#b0df8d6ef9b5001b2be3a94d909ce3c29a80f9e1"
+  integrity sha512-rx29MMkRdVmzunmiA4lzBYJNnXsW/PhG4kMBy2ATsYaDjGGR75dCFEVVROKpNwlVdcUX3xxlghKQOeDPBJobng==
+
 "@types/q@^1.5.1":
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/@types/q/-/q-1.5.1.tgz#48fd98c1561fe718b61733daed46ff115b496e18"

@@ -63,7 +63,7 @@ func main() {
 	config := cors.DefaultConfig()
 	config.AllowHeaders = append(config.AllowHeaders, "Authorization")
 	config.AllowOrigins = []string{"http://localhost:8080", "http://fxdeva16.factset.com:8090",
-		"http://localhost:8090", "https://knksched.herokuapp.com"}
+		"http://localhost:8090", "https://schedule.kithandkink.com"}
 
 	router := gin.New()
 	router.Use(gin.Logger())
