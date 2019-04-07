@@ -3,7 +3,8 @@
     <v-layout column>
       <v-flex align-self-center>
         <v-btn-toggle v-model='dayIdx'>
-          <v-btn flat v-for='(d, idx) in dateRange' :value='idx' :key='idx'>
+          <v-btn flat v-for='(d, idx) in dateRange' :value='idx' :key='idx'
+            @click='$ga.event("events","set room day", d.format("dddd"))'>
             {{ d.format('dddd') }}
           </v-btn>
         </v-btn-toggle>
@@ -22,7 +23,7 @@
 </template>
 
 <script lang='ts'>
-import { Component, Vue, Mixins } from 'vue-property-decorator';
+import { Component, Vue, Mixins, Watch } from 'vue-property-decorator';
 import TimeGrid from '@/components/TimeGrid.vue';
 import ScheduleView from '@/components/Schedule.vue';
 import GridMixin from '@/mixins/grid-mixin';
@@ -38,6 +39,18 @@ import moment from 'moment';
 })
 export default class RoomGrid extends Mixins(GridMixin) {
   public dayIdx = 0;
+
+  @Watch('dateRange')
+  public initDay(val: moment.Moment[]) {
+    if (!val) { return; }
+
+    const today = moment();
+    val.forEach((date, idx) => {
+      if (today.dayOfYear() === date.dayOfYear()) {
+        this.dayIdx = idx;
+      }
+    });
+  }
 
   public get times(): string[] {
     if (!this.sched || !this.roomCols.length) { return []; }

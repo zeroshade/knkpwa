@@ -8,7 +8,9 @@ const router = new VueRouter({
   mode: 'history',
   base: process.env.BASE_URL,
   routes: [
-    { path: '/', redirect: '/rooms' },
+    {
+      path: '/', name: 'landing',
+    },
     {
       path: '/rooms/:id?', name: 'rooms',
       props,

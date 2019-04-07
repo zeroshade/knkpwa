@@ -16,6 +16,7 @@ export interface AuthState {
   idToken: string | null;
   expiresAt: number;
   user: (Auth0UserProfile & {[index: string]: any}) | null;
+  defaultView: string;
 }
 
 export interface RootState {

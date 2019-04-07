@@ -41,6 +41,17 @@
               </v-list-tile-content>
             </v-list-tile>
 
+            <v-list-tile>
+              <v-list-tile-content class='mt-4' style='height: 75px'>
+                <v-select v-model='defaultView' label='Default View'
+                  :items='[
+                  {text: "Rooms", value: "rooms"},
+                  {text: "Full", value: "agenda"},
+                  {text: "Events", value: "events"}]'>
+                </v-select>
+              </v-list-tile-content>
+            </v-list-tile>
+
             <v-list-tile href='/admin/' v-if='isAdmin'>
               <v-list-tile-content>
                 <v-list-tile-title>Go To Admin Panel</v-list-tile-title>
@@ -83,9 +94,10 @@ export default class Toolbar extends Vue {
   @Prop(Boolean) public value!: boolean;
   @Action('auth/login') public login!: () => void;
   @Action('auth/logout') public logout!: () => void;
-  @Action('auth/renewAuth') public renewAuth!: () => void;
+  @Action('auth/renewAuth') public renewAuth!: () => Promise<void>;
   @Action('auth/unsubscribe') public unsubscribe!: (sub: PushSubscription) => void;
   @Action('auth/updateSubscription') public updateSubscription!: (sub: PushSubscription) => void;
+  @Action('auth/setDefaultView') public setDefaultView!: (view: string) => Promise<void>;
   @Getter('auth/authenticated') public authenticated!: boolean;
   @Getter('auth/authflag') public authflag!: boolean;
   @Getter('auth/avatar') public avatar!: string;
@@ -93,6 +105,7 @@ export default class Toolbar extends Vue {
   @Getter('auth/nickname') public nickname!: string;
   @Getter('auth/admin') public isAdmin!: boolean;
   @Getter('curSchedule') public curSchedule!: Schedule;
+  @Getter('auth/defview') public defView!: string;
 
   public readonly color = process.env.VUE_APP_TOOLBAR_COLOR;
   public readonly btncolor = process.env.VUE_APP_LOGIN_COLOR;
@@ -103,9 +116,13 @@ export default class Toolbar extends Vue {
   public notifsEnabled = false;
   public swReg: ServiceWorkerRegistration | null = null;
 
-  public created() {
+  public async created() {
     if (this.authflag) {
-      this.renewAuth();
+      await this.renewAuth();
+    }
+
+    if (this.$route.name === 'landing') {
+      this.$router.push({name: this.defaultView, params: this.$route.params});
     }
 
     this.notifPermission = (Notification.permission === 'granted');
@@ -119,6 +136,15 @@ export default class Toolbar extends Vue {
 
     const sub = await this.swReg.pushManager.getSubscription();
     this.notifsEnabled = (sub !== null);
+  }
+
+  public get defaultView(): string {
+    return this.defView;
+  }
+
+  public set defaultView(val: string) {
+    this.setDefaultView(val);
+    this.$ga.event('prefs', 'change def view', val);
   }
 
   @Watch('notifsEnabled')

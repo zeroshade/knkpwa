@@ -20,6 +20,7 @@ const authModule: Module<AuthState, RootState> = {
     idToken: localStorage.getItem('id_token'),
     expiresAt: Number(localStorage.getItem('expires_at')) || 0,
     user: JSON.parse(localStorage.getItem('user') || '{}'),
+    defaultView: 'rooms',
   },
   getters: {
     accessToken(state: AuthState): string {
@@ -52,6 +53,12 @@ const authModule: Module<AuthState, RootState> = {
     useremail(state: AuthState): string {
       return state.user ? state.user.email || '' : '';
     },
+    defview(state: AuthState): string {
+      if (state.authenticated && state.user && state.user[auth.NAMESPACE + 'defaultView']) {
+        return state.user[auth.NAMESPACE + 'defaultView'];
+      }
+      return state.defaultView;
+    },
   },
   mutations: {
     authenticated(state: AuthState, authData: Auth0DecodedHash) {
@@ -70,6 +77,7 @@ const authModule: Module<AuthState, RootState> = {
       state.authenticated = false;
       state.accessToken = null;
       state.idToken = null;
+      state.defaultView = 'rooms';
 
       localStorage.removeItem('access_token');
       localStorage.removeItem('id_token');
@@ -79,6 +87,12 @@ const authModule: Module<AuthState, RootState> = {
     updateFavs(state: AuthState, favs) {
       if (state.user) {
         state.user[auth.NAMESPACE + 'favs'] = favs;
+      }
+    },
+    setDefaultView(state: AuthState, view: string) {
+      if (state.user) {
+        state.user[auth.NAMESPACE + 'defaultView'] = view;
+        localStorage.setItem('user', JSON.stringify(state.user));
       }
     },
   },
@@ -115,6 +129,16 @@ const authModule: Module<AuthState, RootState> = {
       auth.updateUserMeta(state.accessToken || '', state.user.sub || '', {favs}).then((prof) => {
         if (!prof) { return; }
         commit('updateFavs', prof.user_metadata.favs);
+      }).catch((err) => {
+        commit('logError', err, { root: true });
+      });
+    },
+    setDefaultView({ commit, state }, view: string) {
+      if (!state.user) { return; }
+
+      auth.updateUserMeta(state.accessToken || '', state.user.sub || '', {defaultView: view}).then((prof) => {
+        if (!prof) { return; }
+        commit('setDefaultView', prof.user_metadata.defaultView);
       }).catch((err) => {
         commit('logError', err, { root: true });
       });
