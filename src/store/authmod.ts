@@ -32,13 +32,13 @@ const authModule: Module<AuthState, RootState> = {
       return state.authenticated;
     },
     admin(state: AuthState): boolean {
-      return state.authenticated && state.user && state.user['http://www.thelazydm.org/roles'].includes('admin');
+      return state.authenticated && state.user && state.user[auth.NAMESPACE + 'roles'].includes('admin');
     },
     avatar(state: AuthState): string {
       return state.user ? state.user.picture : '';
     },
     userfavs(state: AuthState): number[] {
-      return state.user ? state.user['http://www.thelazydm.org/favs'] : [];
+      return state.user ? state.user[auth.NAMESPACE + 'favs'] : [];
     },
     username(state: AuthState): string {
       return state.user ? state.user.name : '';
@@ -78,7 +78,7 @@ const authModule: Module<AuthState, RootState> = {
     },
     updateFavs(state: AuthState, favs) {
       if (state.user) {
-        state.user['http://www.thelazydm.org/favs'] = favs;
+        state.user[auth.NAMESPACE + 'favs'] = favs;
       }
     },
   },

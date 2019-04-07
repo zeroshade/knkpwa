@@ -5,7 +5,7 @@
         <v-icon v-if='modalEvent.icon' class='pr-1' dark>{{ modalEvent.icon }}</v-icon>
         <span style='width: 75%'>{{ modalEvent.title }}</span>
         <v-spacer />
-        <v-btn icon @click='toggleFav(modalEvent.id)' v-if='authenticated'>
+        <v-btn icon @click='toggleStar(modalEvent.id)' v-if='authenticated'>
           <v-icon>{{ userfavs.includes(modalEvent.id) ? 'star' : 'star_border' }}</v-icon>
         </v-btn>
       </v-card-title>
@@ -54,7 +54,7 @@ export default class EventDialog extends Vue {
   public toggleStar(id: number): void {
     if (this.modalEvent === null) { return; }
 
-    const action = (this.userfavs.includes(this.modalEvent.id)) ? 'addfav' : 'delfav';
+    const action = (this.userfavs.includes(this.modalEvent.id)) ? 'delfav' : 'addfav';
     this.$ga.event('events', action, this.modalEvent.title);
     this.toggleFav(id);
   }

@@ -1,13 +1,14 @@
 import { WebAuth, Management, Auth0DecodedHash, Auth0ParseHashError, Auth0UserProfile } from 'auth0-js';
 
 const scope = [
-  'openid', 'profile', 'permissions', 'roles',
+  'openid', 'profile', 'permissions', 'roles', 'groups',
   'email', 'read:current_user', 'update:current_user_metadata',
   'create:current_user_metadata',
 ];
 
 export default class Authenticator {
   public auth0: WebAuth;
+  public readonly NAMESPACE = 'https://kithandkink.com/';
 
   constructor() {
     this.auth0 = new WebAuth({
