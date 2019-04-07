@@ -47,7 +47,9 @@
                   :items='[
                   {text: "Rooms", value: "rooms"},
                   {text: "Full", value: "agenda"},
-                  {text: "Events", value: "events"}]'>
+                  {text: "Events", value: "events"},
+                  {text: "Personal", value: "personal"},
+                  ]'>
                 </v-select>
               </v-list-tile-content>
             </v-list-tile>
@@ -62,6 +64,7 @@
       </v-menu>
     </template>
     <v-tabs slot='extension' centered grow :color='color' :slider-color='slider'>
+      <v-tab v-if='authenticated' :to='{ name: "personal", params: $route.params }'>My Agenda</v-tab>
       <v-tab :to='{ name: "agenda", params: $route.params }'>Full View</v-tab>
       <v-tab :to='{ name: "rooms", params: $route.params }'>Room View</v-tab>
       <v-tab :to='{ name: "events", params: $route.params }'>Event View</v-tab>

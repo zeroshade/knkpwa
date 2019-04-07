@@ -36,6 +36,14 @@ const router = new VueRouter({
       },
     },
     {
+      path: '/personal/:id?', name: 'personal',
+      props,
+      component: () => import(/* webpackChunkName: "group-app" */ '@/views/Personal.vue'),
+      meta: {
+        title: 'Personal View',
+      },
+    },
+    {
       path: '/callback', component: () => import(/* webpackChunkName: "group-auth" */ '@/views/Auth.vue'),
       name: 'auth',
       meta: {
