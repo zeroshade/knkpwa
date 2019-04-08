@@ -28,7 +28,7 @@ import TimeGrid from '@/components/TimeGrid.vue';
 import ScheduleView from '@/components/Schedule.vue';
 import GridMixin from '@/mixins/grid-mixin';
 import event, { Event } from '@/api/event';
-import { Schedule } from '@/api/schedule';
+import sched, { Schedule } from '@/api/schedule';
 import moment from 'moment';
 
 @Component({
@@ -73,7 +73,7 @@ export default class RoomGrid extends Mixins(GridMixin) {
             return acc;
           }, {});
 
-      const rooms = Object.keys(byRoom).sort();
+      const rooms = sched.roomSort(Object.keys(byRoom), this.sched);
       const ret: {[index: string]: {day: moment.Moment, events: Event[][]}} = {};
       let first = end;
       for (const k of rooms) {

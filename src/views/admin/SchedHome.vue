@@ -1,6 +1,6 @@
 <template>
   <v-layout wrap justify-space-between>
-    <v-flex xs12 md6 v-if='schedule'>
+    <v-flex xs12 md5 v-if='schedule'>
       <v-card class='mt-3'>
         <v-card-title class='headline'>Colors!</v-card-title>
         <v-card-text>
@@ -21,6 +21,20 @@
               </td>
             </template>
           </v-data-table>
+        </v-card-text>
+      </v-card>
+    </v-flex>
+    <v-flex xs12 md3 v-if='schedule'>
+      <v-card class='mt-3'>
+        <v-card-title class='headline'>Order Rooms</v-card-title>
+        <v-card-text>
+          <div v-drag-and-drop:options='dragOptions'>
+            <ol class='order-list' @reordered='reorder'>
+              <li class='drag-item' v-for='r in roomOrder' :key='r' :data-id='r'>
+                {{ r }}
+              </li>
+            </ol>
+          </div>
         </v-card-text>
       </v-card>
     </v-flex>
@@ -49,8 +63,8 @@
 </template>
 
 <script lang='ts'>
-import { Component, Prop, Vue } from 'vue-property-decorator';
-import { Schedule } from '@/api/schedule';
+import { Component, Prop, Watch, Vue } from 'vue-property-decorator';
+import sched, { Schedule } from '@/api/schedule';
 import { Action, Getter } from 'vuex-class';
 import { Event } from '@/api/event';
 import ColorChooser from '@/components/admin/ColorChooser.vue';
@@ -67,8 +81,31 @@ export default class AdminScheduleHome extends Vue {
   @Action('admin/deleteSchedule') public deleteSchedule!: (id: number) => Promise<void>;
   @Getter('admin/draft') public draftEvents!: Event[];
 
+  public dragOptions = {
+    dropzoneSelector: '.order-list',
+    draggableSelector: '.drag-item',
+    reactivityEnabled: true,
+    showDropzoneAreas: true,
+  };
+
   public dialog = false;
   public tempColor = '';
+
+  public get roomOrder(): string[] {
+    return sched.roomSort(this.rooms, this.schedule);
+  }
+
+  public reorder(ev: CustomEvent) {
+    const reordered = this.roomOrder.filter((item) => ev.detail.ids.map(String).indexOf(item) >= 0);
+    const nonreorder = this.roomOrder.filter((item) => ev.detail.ids.map(String).indexOf(item) < 0);
+    nonreorder.splice(ev.detail.index, 0, ...reordered);
+    const neworder: {[index: string]: number} = {};
+    nonreorder.forEach((v, i) => {
+      neworder[v] = i;
+    });
+    this.schedule.rooms = neworder;
+    this.updateSchedule(this.schedule);
+  }
 
   public async delSched() {
     await this.deleteSchedule(this.schedule.id);
@@ -93,3 +130,47 @@ export default class AdminScheduleHome extends Vue {
   }
 }
 </script>
+
+<style lang="stylus">
+@keyframes nodeInserted
+  from
+    opacity 0.2
+  to
+    opacity 0.8
+
+.item-dropzone-area
+  height 2rem
+  background #888
+  opacity 0.8
+  animation-duration 0.5s
+  animation-name nodeInserted
+</style>
+
+<style lang="stylus" scoped>
+.order-list
+  display flex
+  flex-direction column
+  list-style-type none
+  margin-right 5px
+  overflow-y auto
+  padding 3px !important
+  padding-bottom 2rem
+
+.drag-item
+  display block
+  margin 0 0 2px 0
+  padding 0.2em 0.4em
+  border-radius 0.2em
+  line-height 1.3
+
+  &:hover
+    box-shadow 0 0 0 2px #6688bb, inset 0 0 0 1px #ddd
+
+  &:focus
+    outline none
+    box-shadow 0 0 0 2px #6688bb, inset 0 0 0 1px #ddd
+
+  &[aria-grabbed="true"]
+    background #5cc1a6
+    color #fff
+</style>

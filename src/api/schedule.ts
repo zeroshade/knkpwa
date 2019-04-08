@@ -10,6 +10,7 @@ export interface ISchedule {
   title: string;
   defColor: string;
   colorMap: {[index: string]: string};
+  rooms: {[index: string]: number};
 }
 
 function pick<T, K extends keyof T>(O: T, ...A: K[]) {
@@ -25,6 +26,7 @@ export class Schedule {
   public start = '';
   public defColor = '';
   public colorMap: {[index: string]: string} = {};
+  public rooms: {[index: string]: number} = {};
   public events: Event[] = [];
 
   constructor(ev: ISchedule) {
@@ -35,6 +37,10 @@ export class Schedule {
       this.colorMap = ev.colorMap;
     }
     this.colorMap.other = this.defColor;
+
+    if (ev.rooms) {
+      this.rooms = ev.rooms;
+    }
   }
 
   public clone(): Schedule {
@@ -42,6 +48,7 @@ export class Schedule {
       title: this.title, id: this.id, numHours: this.numHours, start: this.start,
       defColor: this.defColor, dayStart: this.dayStart.format('YYYY-MM-DD'),
       dayEnd: this.dayEnd.format('YYYY-MM-DD'), colorMap: {...this.colorMap},
+      rooms: {...this.rooms},
     });
     return s;
   }
@@ -51,6 +58,7 @@ export class Schedule {
       title: this.title, id: this.id, numHours: this.numHours, start: this.start,
       defColor: this.defColor, dayStart: this.dayStart.format('YYYY-MM-DD'),
       dayEnd: this.dayEnd.format('YYYY-MM-DD'), colorMap: this.colorMap,
+      rooms: this.rooms,
     };
   }
 
@@ -89,5 +97,22 @@ export default {
   async getSchedule(id: number): Promise<Schedule> {
     const resp = await fetch(process.env.VUE_APP_BACKEND_HOST + `/scheds/${id}`);
     return new Schedule(await resp.json());
+  },
+  roomSort(rooms: string[], sched: Schedule): string[] {
+    return rooms.sort((a, b) => {
+      if (a === b) { return 0; }
+      const aexist = a in sched.rooms;
+      const bexist = b in sched.rooms;
+
+      if (!aexist || !bexist) {
+        if (!aexist && !bexist) {
+          return (a < b) ? -1 : 1;
+        }
+        if (!aexist) { return 1; }
+        return -1;
+      }
+
+      return sched.rooms[a] - sched.rooms[b];
+    });
   },
 };

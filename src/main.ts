@@ -6,7 +6,6 @@ import store from './store';
 import VueAnalytics from 'vue-analytics';
 import './registerServiceWorker';
 import 'roboto-fontface/css/roboto/roboto-fontface.css';
-
 import moment from 'moment';
 Vue.config.productionTip = false;
 

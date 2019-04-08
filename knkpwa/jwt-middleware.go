@@ -41,7 +41,7 @@ func checkJWT(perms ...string) gin.HandlerFunc {
 		claims := map[string]interface{}{}
 		custom := struct {
 			Subject string           `json:"sub"`
-			Perms   sort.StringSlice `json:"http://www.thelazydm.org/permissions"`
+			Perms   sort.StringSlice `json:"https://kithandkink.com/permissions"`
 		}{}
 
 		err = validator.Claims(c.Request, tok, &claims, &custom)

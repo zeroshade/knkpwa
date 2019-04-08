@@ -60,7 +60,7 @@ func main() {
 	}
 	defer db.Close()
 
-	db.AutoMigrate(&Subscription{}, &Schedule{}, &Event{}, &ColorMap{}, &DraftEvent{})
+	db.AutoMigrate(&Subscription{}, &Schedule{}, &Event{}, &ColorMap{}, &DraftEvent{}, &RoomOrdering{})
 
 	config := cors.DefaultConfig()
 	config.AllowHeaders = append(config.AllowHeaders, "Authorization")
@@ -83,14 +83,14 @@ func main() {
 
 	router.GET("/scheds", func(c *gin.Context) {
 		var scheds []Schedule
-		db.Preload("ColorMap").Order("day_start desc").Find(&scheds)
+		db.Preload("ColorMap").Preload("RoomOrdering").Order("day_start desc").Find(&scheds)
 
 		c.JSON(http.StatusOK, scheds)
 	})
 
 	router.GET("/scheds/:id", func(c *gin.Context) {
 		var sc Schedule
-		db.Preload("ColorMap").Find(&sc, "id = ?", c.Param("id"))
+		db.Preload("ColorMap").Preload("RoomOrdering").Find(&sc, "id = ?", c.Param("id"))
 		c.JSON(http.StatusOK, &sc)
 	})
 

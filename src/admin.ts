@@ -5,10 +5,11 @@ import router from './admin-router';
 import store from './store';
 // import './registerServiceWorker';
 import 'roboto-fontface/css/roboto/roboto-fontface.css';
-
+import VueDraggable from 'vue-draggable';
 import moment from 'moment';
 Vue.config.productionTip = false;
 
+Vue.use(VueDraggable);
 Vue.filter('duration', (d: moment.Duration) => {
   let ret = `${d.minutes()}m`;
   if (d.hours() > 0) {

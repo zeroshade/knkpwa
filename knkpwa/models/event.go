@@ -11,6 +11,7 @@ func init() {
 	loc, _ = time.LoadLocation("America/New_York")
 }
 
+// Event Struct to hold event information for db
 type Event struct {
 	ID         uint      `json:"id"`
 	SchedID    uint      `json:"schedId"`
