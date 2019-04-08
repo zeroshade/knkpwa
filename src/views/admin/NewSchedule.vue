@@ -121,7 +121,7 @@ export default class NewSched extends Vue {
     if (form.validate()) {
       await this.addSched({id: 0, start: '12:00', numHours: 14,
         dayStart: this.start, dayEnd: this.end, title: this.title,
-        defColor: this.defColor, colorMap: {}});
+        defColor: this.defColor, colorMap: {}, rooms: {}});
       this.$router.push({name: 'admin'});
     }
   }
