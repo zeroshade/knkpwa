@@ -47,7 +47,7 @@ const scavengerModule: Module<ScavengerState, RootState> = {
       state.hunts.splice(hidx, 1, hunt);
     },
     removeHunt(state: ScavengerState, payload: Hunt) {
-      state.hunts.splice(state.hunts.findIndex((h) => h.id == payload.id), 1);
+      state.hunts.splice(state.hunts.findIndex((h) => h.id === payload.id), 1);
     },
   },
   actions: {
@@ -68,7 +68,7 @@ const scavengerModule: Module<ScavengerState, RootState> = {
         method: 'POST',
         body,
       }, {root: true});
-      if (id != -1) {
+      if (id !== -1) {
         commit('updateHunt', payload);
       }
     },
