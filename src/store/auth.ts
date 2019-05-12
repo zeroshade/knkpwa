@@ -12,8 +12,8 @@ export default class Authenticator {
 
   constructor() {
     this.auth0 = new WebAuth({
-      domain: process.env.VUE_APP_AUTH0_DOMAIN,
-      clientID: process.env.VUE_APP_AUTH0_CLIENT_ID,
+      domain: process.env.VUE_APP_AUTH0_DOMAIN || '',
+      clientID: process.env.VUE_APP_AUTH0_CLIENT_ID || '',
       redirectUri: `${location.origin}${process.env.BASE_URL}callback`,
       responseType: 'token id_token',
       scope: scope.join(' '),

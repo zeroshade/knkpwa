@@ -1,5 +1,6 @@
 import { AdminState, RootState } from './states';
 import { Module } from 'vuex';
+import scavengerMod from './scavengermod';
 import sched, { Schedule, ISchedule } from '@/api/schedule';
 import event, { Event, IEvent } from '@/api/event';
 import colors from 'vuetify/es5/util/colors';
@@ -17,6 +18,9 @@ function camelCaseToDash(str: string): string {
 
 const adminModule: Module<AdminState, RootState> = {
   namespaced: true,
+  modules: {
+    scavenger: scavengerMod,
+  },
   state: {
     schedule: null,
     events: [],

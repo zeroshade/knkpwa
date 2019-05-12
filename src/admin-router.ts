@@ -30,5 +30,16 @@ export default new Router({
       name: 'admin.draft',
       component: () => import(/* webpackChunkName: "group-admin" */ '@/views/admin/Draft.vue'),
     },
+    {
+      path: '/admin/hunt/:huntid',
+      name: 'admin.hunt',
+      props: (route: Route) => ({ id: +route.params.huntid }),
+      component: () => import(/* webpackChunkName: "group-admin-hunt" */ '@/views/admin/ScavengerHome.vue'),
+    },
+    {
+      path: '/admin/hunt/new',
+      name: 'admin.newhunt',
+      component: () => import(/* webpackChunkName: "group-admin-hunt" */ '@/views/admin/NewHunt.vue'),
+    },
   ],
 });

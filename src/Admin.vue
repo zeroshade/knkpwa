@@ -2,7 +2,7 @@
   <v-app light id='admin'>
     <nav-drawer v-model='drawer' style="z-index: 200;" />
     <toolbar :sched='sched' v-model='drawer' style="z-index: 200;" />
-    <v-content fill-height fluid class='ml-4 mt-2 mr-3'>
+    <v-content fill-height fluid class='ml-4 mt-2 mr-3' v-if='!$route.fullPath.startsWith("/admin/hunt/")'>
       <v-layout align-top justify-left class='mb-3'>
         <v-flex xs12 md5>
           <v-card dark>
@@ -22,6 +22,9 @@
         </v-flex>
       </v-layout>
       <router-view :schedule='sched' :events='events' />
+    </v-content>
+    <v-content fill-height fluid class='ml-4 mt-2 mr-3' v-else>
+      <router-view />
     </v-content>
     <v-footer app style="z-index: 200;">
       <span>&copy; 2018</span>
@@ -54,7 +57,7 @@ export default class Admin extends Vue {
 
   public mounted() {
     if (!this.isAdmin) {
-      window.location.href = process.env.BASE_URL;
+      window.location.href = process.env.BASE_URL || '';
       return;
     }
   }

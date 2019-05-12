@@ -60,7 +60,9 @@ func main() {
 	}
 	defer db.Close()
 
-	db.AutoMigrate(&Subscription{}, &Schedule{}, &Event{}, &ColorMap{}, &DraftEvent{}, &RoomOrdering{})
+	db.AutoMigrate(&Subscription{}, &Schedule{}, &Event{}, &ColorMap{},
+		&DraftEvent{}, &RoomOrdering{}, &Hunt{}, &Clue{})
+	db.Model(&Clue{}).AddForeignKey("hunt_id", Hunt{}.TableName()+"(id)", "CASCADE", "RESTRICT")
 
 	config := cors.DefaultConfig()
 	config.AllowHeaders = append(config.AllowHeaders, "Authorization")
@@ -80,6 +82,13 @@ func main() {
 		}
 		c.Next()
 	})
+
+	router.POST("/hunt", SaveHunt(db))
+	router.DELETE("/hunt/:id", DeleteHunt(db))
+	router.GET("/hunts", ListHunts(db))
+	router.PUT("/hunts/clue", AddClue(db))
+	router.POST("/hunts/clue", UpdateClue(db))
+	router.DELETE("/hunts/clue/:id", DeleteClue(db))
 
 	router.GET("/scheds", func(c *gin.Context) {
 		var scheds []Schedule

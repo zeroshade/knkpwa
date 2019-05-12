@@ -10,7 +10,7 @@
     <v-text-field slot='input'
       :rules='[(v) => !!v || "Cannot be empty"]'
       v-model='saved'
-      :label='label' single-line counter></v-text-field>
+      :label='label' single-line counter />
   </v-edit-dialog>
 </template>
 

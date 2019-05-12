@@ -1,6 +1,7 @@
 import { Auth0UserProfile } from 'auth0-js';
 import { Schedule } from '@/api/schedule';
 import { Event } from '@/api/event';
+import { Hunt } from '@/api/hunt';
 
 export interface AdminState {
   schedule: Schedule | null;
@@ -8,6 +9,10 @@ export interface AdminState {
   colorNames: string[];
   modifierNames: string[];
   draftEvents: Event[];
+}
+
+export interface ScavengerState {
+  hunts: Hunt[];
 }
 
 export interface AuthState {

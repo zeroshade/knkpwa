@@ -62,24 +62,52 @@
           </template>
         </template>
       </v-list-group>
+
+      <v-list-group prepend-icon="my_location" value="false">
+        <v-list-tile slot='activator'>
+          <v-list-tile-title>Scavenger Hunts</v-list-tile-title>
+        </v-list-tile>
+
+        <v-list-tile :to='{ name: "admin.hunt", params: { huntid: h.id }}' v-for='h in hunts' :key='h.id'>
+          <v-list-tile-title>{{ h.title }}</v-list-tile-title>
+        </v-list-tile>
+
+        <v-list-tile avatar :to='{ name: "admin.newhunt" }'>
+          <v-list-tile-avatar>
+            <v-icon>add_circle_outline</v-icon>
+          </v-list-tile-avatar>
+          <v-list-tile-content>
+            <v-list-tile-title>Hunt List</v-list-tile-title>
+          </v-list-tile-content>
+        </v-list-tile>
+      </v-list-group>
+
     </v-list>
   </v-navigation-drawer>
 </template>
 
 <script lang='ts'>
 import { Component, Prop, Vue } from 'vue-property-decorator';
-import { Action, State } from 'vuex-class';
+import { Action, State, namespace } from 'vuex-class';
 import { Schedule } from '@/api/schedule';
+import { Hunt } from '@/api/hunt';
+
+const mod = namespace('admin/scavenger');
 
 @Component
 export default class AdminNavDrawer extends Vue {
   @Prop(Boolean) public value!: boolean;
   @Action('fetchScheds') public fetchScheds!: () => Promise<void>;
   @State('schedules') public schedules!: Schedule[];
+  @mod.Action('loadHunts') public loadHunts!: () => Promise<void>;
+  @mod.State('hunts') public hunts!: Hunt[];
 
   public mounted() {
     if (!this.schedules.length) {
       this.fetchScheds();
+    }
+    if (!this.hunts.length) {
+      this.loadHunts();
     }
   }
 }

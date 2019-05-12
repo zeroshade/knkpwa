@@ -164,7 +164,7 @@ export default class Toolbar extends Vue {
 
     if (!oldVal && val) {
       if (!sub) {
-        const applicationServerKey = urlB64ToUint8Array(process.env.VUE_APP_VAPID_PUBLIC_KEY);
+        const applicationServerKey = urlB64ToUint8Array(process.env.VUE_APP_VAPID_PUBLIC_KEY || '');
         sub = await this.swReg.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey,
