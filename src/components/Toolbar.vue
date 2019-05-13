@@ -68,6 +68,7 @@
       <v-tab :to='{ name: "agenda", params: $route.params }'>Full View</v-tab>
       <v-tab :to='{ name: "rooms", params: $route.params }'>Room View</v-tab>
       <v-tab :to='{ name: "events", params: $route.params }'>Event View</v-tab>
+      <v-tab :to='{ name: "hunts" }'>Scavenger Hunts</v-tab>
     </v-tabs>
   </v-toolbar>
 </template>

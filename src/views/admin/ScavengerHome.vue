@@ -35,6 +35,9 @@
                 :color='item.color' :bg-color='item.bgColor'
                 :text='item.id' :size='50' @click.native='colorEdit(item)' />
             </td>
+            <td width='10%'>
+              <p style='cursor: pointer' @click='textEdit(item)'>{{ item.title }}</p>
+            </td>
             <td>
               <p style='cursor: pointer' @click='textEdit(item)'>{{ item.text }}</p>
             </td>
@@ -99,10 +102,10 @@
         <v-card-title class='headline pb-1'>Edit QR Code</v-card-title>
         <v-divider />
         <v-card-text>
-          <div style='margin: 0 auto; width: 170px; height: 170px;'>
+          <div style='margin: 0 auto; width: 270px; height: 270px;'>
             <qr-code-component v-if='clueEdit !== null' :text='clueEdit.id'
               :key='clueEdit.key()'
-              :size='150' :color='clueEdit.color' :bg-color='clueEdit.bgColor' />
+              :size='250' :color='clueEdit.color' :bg-color='clueEdit.bgColor' />
           </div>
           <color-menu v-if='clueEdit !== null' v-model='clueEdit.color' label='color' />
           <color-menu v-if='clueEdit !== null' v-model='clueEdit.bgColor' label='bgcolor' />
@@ -123,6 +126,10 @@
         <v-card-title class='headline pb-1'>{{ clueEdit === null ? 'New' : 'Edit' }} Clue</v-card-title>
         <v-divider />
         <v-card-text>
+          <v-text-field v-if='clueEdit === null' label='Clue Title' v-model='newTitle'
+            :rules='[v => !!v || "Cannot be empty"]' />
+          <v-text-field v-else label='Clue Title' v-model='clueEdit.title'
+            :rules='[v => !!v || "Cannot be empty"]' />
           <v-textarea v-if='clueEdit === null' label='Clue Text' v-model='newText'
             :rules='[v => !!v || "Cannot be empty"]' />
           <v-textarea v-else label='Clue Text' v-model='clueEdit.text'
@@ -143,28 +150,11 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-
-<!--
-    <v-flex xs6>
-      <qrcode-drop-zone @dragover='onDragOver' @decode='onDecode'>
-        <div class='drop-area' :class='{ "dragover": isDragging }'>
-          DROP IMAGES
-        </div>
-      </qrcode-drop-zone>
-    </v-flex>
-
-    <v-flex xs6>
-      <v-btn @click='gen'>Generate</v-btn>
-      <qr-code-component :text='lastGen' />
-    </v-flex>
--->
-
   </v-layout>
 </template>
 
 <script lang='ts'>
 import { Component, Vue, Prop } from 'vue-property-decorator';
-import { QrcodeStream, QrcodeDropZone } from 'vue-qrcode-reader';
 import QrCodeComponent from 'vue-qrcode-component';
 import { Hunt, Clue } from '@/api/hunt';
 import { State, Action } from 'vuex-class';
@@ -173,8 +163,6 @@ import ColorMenu from '@/components/admin/ColorMenu.vue';
 
 @Component({
   components: {
-    QrcodeStream,
-    QrcodeDropZone,
     QrCodeComponent,
     'chrome-picker': Chrome,
     ColorMenu,
@@ -191,7 +179,6 @@ export default class ScavengerHome extends Vue {
   public newTitle = '';
   public newDesc = '';
   public newText = '';
-  public isDragging = false;
   public clueDialog = false;
   public confirmDialog = false;
   public qrEdit = false;
@@ -201,6 +188,7 @@ export default class ScavengerHome extends Vue {
   public color = '';
   public headers = [
     { text: 'QR', align: 'left', sortable: false },
+    { text: 'Title', align: 'left', sortable: true, value: 'title' },
     { text: 'Text', sortable: true, value: 'text' },
     { text: '', sortable: false },
   ];
@@ -234,7 +222,8 @@ export default class ScavengerHome extends Vue {
   }
 
   public newClue() {
-    this.addClue(new Clue(this.newText, this.curHunt.id));
+    this.addClue(new Clue(this.newTitle, this.newText, this.curHunt.id));
+    this.newTitle = '';
     this.newText = '';
     this.clueDialog = false;
   }
@@ -246,26 +235,5 @@ export default class ScavengerHome extends Vue {
     this.qrEdit = false;
     this.clueEdit = null;
   }
-
-  public onDragOver(dragging: boolean) {
-    this.isDragging = dragging;
-  }
-
-  public onDecode(decoded: string) {
-    console.log(decoded);
-  }
 }
 </script>
-
-<style lang="stylus" scoped>
-.drop-area
-  height: 300px
-  color: #fff
-  text-align: center
-  font-weight: bold
-  padding: 10px
-  background-color: rgba(0, 0, 0, 0.5)
-
-.dragover
-  background-color: rgba(0, 0, 0, 0.8)
-</style>

@@ -3,6 +3,7 @@ import Vuex, { StoreOptions } from 'vuex';
 import { RootState } from './states';
 import authModule from './authmod';
 import adminModule from './adminmod';
+import huntModule from './huntmod';
 import sched, { Schedule } from '@/api/schedule';
 import { Event } from '@/api/event';
 
@@ -12,6 +13,7 @@ export default new Vuex.Store<RootState>({
   modules: {
     auth: authModule,
     admin: adminModule,
+    scavenger: huntModule,
   },
   state: {
     schedules: [],

@@ -1,7 +1,6 @@
 import { Module } from 'vuex';
 import { ScavengerState, RootState } from './states';
 import { IHunt, Hunt, Clue } from '@/api/hunt';
-import { Cipher } from 'crypto';
 
 const scavengerModule: Module<ScavengerState, RootState> = {
   namespaced: true,

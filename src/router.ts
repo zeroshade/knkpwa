@@ -44,6 +44,14 @@ const router = new VueRouter({
       },
     },
     {
+      path: '/scavenger', name: 'hunts',
+      props,
+      component: () => import(/* webpackChunkName: "group-hunt" */ '@/views/Scavenger.vue'),
+      meta: {
+        title: 'Scavenger Hunts',
+      },
+    },
+    {
       path: '/callback', component: () => import(/* webpackChunkName: "group-auth" */ '@/views/Auth.vue'),
       name: 'auth',
       meta: {
