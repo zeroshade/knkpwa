@@ -52,9 +52,9 @@
       <v-card>
         <div class='dragbox grab' style='width: 500px; height: 500px;' v-dragscroll>
           <ul id='star_map'>
-            <li v-if='c.mapPiece' v-for='c in userClues' :key='c.id'
+            <li v-for='c in userClueMapPieces' :key='c.id'
               :style='getClueStyle(c)'
-              :class='c.mapPiece.class'></li>
+              :class='c.class'></li>
           </ul>
         </div>
       </v-card>
@@ -88,9 +88,10 @@
 <script lang='ts'>
 import { Component, Vue } from 'vue-property-decorator';
 import { QrcodeDropZone, QrcodeStream } from 'vue-qrcode-reader';
-import { Clue, Hunt, HuntInfo } from '@/api/hunt';
+import { Clue, Hunt, HuntInfo, MapPiece } from '@/api/hunt';
 import { Action } from 'vuex-class';
 import { isMobile } from 'mobile-device-detect';
+import { isUndefined } from 'util';
 
 @Component({
   components: {
@@ -179,16 +180,17 @@ export default class ScavengerView extends Vue {
     this.active = [decoded];
   }
 
-  public getClueStyle(c: Clue): {[index: string]: string} | null {
-    if (c.mapPiece) {
-      return {
-        top: c.mapPiece.top + 'px',
-        left: c.mapPiece.left + 'px',
-        width: c.mapPiece.width + 'px',
-        height: c.mapPiece.height + 'px',
-      };
-    }
-    return null;
+  public get userClueMapPieces(): MapPiece[] {
+    return this.userClues.filter((c) => c.mapPiece).map((m) => m.mapPiece) as MapPiece[];
+  }
+
+  public getClueStyle(m: MapPiece): {[index: string]: string} | null {
+    return {
+      top: m.top + 'px',
+      left: m.left + 'px',
+      width: m.width + 'px',
+      height: m.height + 'px',
+    };
   }
 }
 </script>
