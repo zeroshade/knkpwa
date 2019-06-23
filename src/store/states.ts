@@ -1,7 +1,7 @@
 import { Auth0UserProfile } from 'auth0-js';
 import { Schedule } from '@/api/schedule';
 import { Event } from '@/api/event';
-import { Hunt } from '@/api/hunt';
+import { Hunt, MapPiece } from '@/api/hunt';
 
 export interface AdminState {
   schedule: Schedule | null;
@@ -13,6 +13,7 @@ export interface AdminState {
 
 export interface ScavengerState {
   hunts: Hunt[];
+  mapPieces: MapPiece[];
 }
 
 export interface AuthState {

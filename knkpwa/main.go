@@ -61,7 +61,7 @@ func main() {
 	defer db.Close()
 
 	db.AutoMigrate(&Subscription{}, &Schedule{}, &Event{}, &ColorMap{},
-		&DraftEvent{}, &RoomOrdering{}, &Hunt{}, &Clue{}, &UserClue{})
+		&DraftEvent{}, &RoomOrdering{}, &Hunt{}, &Clue{}, &UserClue{}, &MapPiece{})
 	db.Model(&Clue{}).AddForeignKey("hunt_id", Hunt{}.TableName()+"(id)", "CASCADE", "RESTRICT")
 	db.Model(&UserClue{}).AddForeignKey("clue_id", Clue{}.TableName()+"(id)", "CASCADE", "RESTRICT")
 
@@ -94,6 +94,7 @@ func main() {
 	router.GET("/my/clues", checkJWT(), GetUserClueList(db))
 	router.PUT("/my/clues/:id", checkJWT(), AddUserClue(db))
 	router.GET("/huntinfo", HuntInfo(db))
+	router.GET("/huntinfo/maps", GetMapPieces(db))
 
 	router.GET("/scheds", func(c *gin.Context) {
 		var scheds []Schedule

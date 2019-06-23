@@ -26,6 +26,7 @@
     "vue-class-component": "^6.0.0",
     "vue-color": "^2.7.0",
     "vue-draggable": "^2.0.0",
+    "vue-dragscroll": "^1.8.3",
     "vue-property-decorator": "^7.0.0",
     "vue-qrcode-component": "^2.1.1",
     "vue-qrcode-reader": "^2.0.1",

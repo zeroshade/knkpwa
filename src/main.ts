@@ -7,8 +7,10 @@ import VueAnalytics from 'vue-analytics';
 import './registerServiceWorker';
 import 'roboto-fontface/css/roboto/roboto-fontface.css';
 import moment from 'moment';
+import VueDragscroll from 'vue-dragscroll';
 Vue.config.productionTip = false;
 
+Vue.use(VueDragscroll);
 Vue.filter('duration', (d: moment.Duration) => {
   let ret = `${d.minutes()}m`;
   if (d.hours() > 0) {

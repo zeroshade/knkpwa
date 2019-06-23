@@ -1,15 +1,19 @@
 import { Module } from 'vuex';
 import { ScavengerState, RootState } from './states';
-import { IHunt, Hunt, Clue } from '@/api/hunt';
+import { IHunt, Hunt, Clue, MapPiece } from '@/api/hunt';
 
 const scavengerModule: Module<ScavengerState, RootState> = {
   namespaced: true,
   state: {
     hunts: [],
+    mapPieces: [],
   },
   mutations: {
     setHunts(state: ScavengerState, payload: Hunt[]) {
       state.hunts = payload;
+    },
+    setMapPieces(state: ScavengerState, payload: MapPiece[]) {
+      state.mapPieces = payload;
     },
     updateHunt(state: ScavengerState, payload: Hunt) {
       const idx = state.hunts.findIndex((h) => h.id === payload.id);
@@ -77,6 +81,13 @@ const scavengerModule: Module<ScavengerState, RootState> = {
         method: 'GET',
       }, {root: true});
       commit('setHunts', (await h.json()).map((o: IHunt) => new Hunt(o)));
+    },
+    async loadMapPieces({commit, dispatch}) {
+      const m = await dispatch('auth/makeAuthedRequest', {
+        path: '/huntinfo/maps',
+        method: 'GET',
+      }, {root: true});
+      commit('setMapPieces', (await m.json()));
     },
     async addClue({ commit, dispatch }, payload: Clue) {
       await dispatch('auth/makeAuthedRequest', {

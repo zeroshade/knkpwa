@@ -1,8 +1,9 @@
 package models
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -13,19 +14,36 @@ type Hunt struct {
 	Name     string `json:"title" gorm:"type:varchar(100)" binding:"required"`
 	Descript string `json:"desc" gorm:"type:text"`
 	Clues    []Clue `json:"clues,omitempty"`
+	Type     string `json:"type"`
 }
 
 func (Hunt) TableName() string {
 	return "knkscavenger"
 }
 
+type MapPiece struct {
+	ID     uint   `json:"id" gorm:"primary_key" binding:"required"`
+	Title  string `json:"title" gorm:"unique" binding:"required"`
+	Class  string `json:"class" binding:"required"`
+	Top    uint   `json:"top" binding:"required"`
+	Left   uint   `json:"left" binding:"required"`
+	Width  uint   `json:"width" binding:"required"`
+	Height uint   `json:"height" binding:"required"`
+}
+
+func (MapPiece) TableName() string {
+	return "knk_maps"
+}
+
 type Clue struct {
-	ID      string `json:"id" gorm:"primary_key;type:varchar(40)" binding:"required"`
-	Title   string `json:"title" gorm:"type:varchar(20)" binding:"required"`
-	Text    string `json:"text" gorm:"type:text" binding:"required"`
-	HuntID  uint   `json:"huntId" binding:"required"`
-	BgColor string `json:"bgColor" gorm:"type:varchar(7)"`
-	Color   string `json:"color" gorm:"type:varchar(7)"`
+	ID         string    `json:"id" gorm:"primary_key;type:varchar(40)" binding:"required"`
+	Title      string    `json:"title" gorm:"type:varchar(20)" binding:"required"`
+	Text       string    `json:"text" gorm:"type:text" binding:"required"`
+	HuntID     uint      `json:"huntId" binding:"required"`
+	BgColor    string    `json:"bgColor" gorm:"type:varchar(7)"`
+	Color      string    `json:"color" gorm:"type:varchar(7)"`
+	MapPieceID uint      `json:"mapId"`
+	Piece      *MapPiece `json:"mapPiece"`
 }
 
 func (Clue) TableName() string {
@@ -39,6 +57,25 @@ type UserClue struct {
 
 func (UserClue) TableName() string {
 	return "knk_user_clue"
+}
+
+func GetMapPieces(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var pieces []MapPiece
+		db.Find(&pieces)
+		c.JSON(http.StatusOK, pieces)
+	}
+}
+
+func getPieceMap(db *gorm.DB) map[uint]*MapPiece {
+	var pieces []MapPiece
+	db.Find(&pieces)
+
+	piecemap := make(map[uint]*MapPiece)
+	for i := range pieces {
+		piecemap[pieces[i].ID] = &pieces[i]
+	}
+	return piecemap
 }
 
 func HuntInfo(db *gorm.DB) gin.HandlerFunc {
@@ -70,6 +107,13 @@ func GetUserClueList(db *gorm.DB) gin.HandlerFunc {
 		var clues []Clue
 		db.Where("id in (?)", db.Table(UserClue{}.TableName()).Select("clue_id").
 			Where("user_id = ?", userSub).QueryExpr()).Find(&clues)
+
+		piecemap := getPieceMap(db)
+		for i, c := range clues {
+			if c.MapPieceID > 0 {
+				clues[i].Piece = piecemap[c.MapPieceID]
+			}
+		}
 		c.JSON(http.StatusOK, clues)
 	}
 }
@@ -102,6 +146,19 @@ func ListHunts(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var hunts []Hunt
 		db.Preload("Clues").Find(&hunts)
+
+		var pieces []MapPiece
+		db.Find(&pieces)
+
+		piecemap := getPieceMap(db)
+
+		for i, h := range hunts {
+			for j, c := range h.Clues {
+				if c.MapPieceID > 0 {
+					hunts[i].Clues[j].Piece = piecemap[c.MapPieceID]
+				}
+			}
+		}
 
 		c.JSON(http.StatusOK, hunts)
 	}

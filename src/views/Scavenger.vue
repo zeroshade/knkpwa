@@ -5,6 +5,9 @@
         <v-card class='mb-4'>
           <v-toolbar card color='grey darken-2'>
             <v-toolbar-title>Scavenger Hunt Clues</v-toolbar-title>
+            <p class='subheading mb-0 mt-2 ml-3 font-weight-light text-capitalize'>
+              <u @click='viewFull = true'>view map</u>
+            </p>
             <v-spacer />
             <v-btn icon @click='clueDialog = true'>
               <v-icon>camera_rear</v-icon>
@@ -33,13 +36,29 @@
             <v-divider vertical />
             <v-flex xs12 md6>
               <v-card-text>
-                <p v-if='viewClue'>{{viewClue.text}}</p>
+                <p v-if='viewClue'>
+                  {{viewClue.text}}
+                </p>
+                <p v-if='viewClue && viewClue.mapPiece'>
+                  <strong>Reveals:</strong> {{ viewClue.mapPiece.title }}
+                </p>
               </v-card-text>
             </v-flex>
           </v-layout>
         </v-card>
       </v-flex>
     </v-layout>
+    <v-dialog lazy v-model='viewFull' max-width='500'>
+      <v-card>
+        <div class='dragbox grab' style='width: 500px; height: 500px;' v-dragscroll>
+          <ul id='star_map'>
+            <li v-if='c.mapPiece' v-for='c in userClues' :key='c.id'
+              :style='getClueStyle(c)'
+              :class='c.mapPiece.class'></li>
+          </ul>
+        </div>
+      </v-card>
+    </v-dialog>
     <v-dialog lazy persistent v-model='clueDialog' max-width='500'>
       <v-card>
         <v-card-title class='headline pb-2'>Register New Clue</v-card-title>
@@ -87,10 +106,12 @@ export default class ScavengerView extends Vue {
 
   public isDragging = false;
   public clueDialog = false;
+  public viewFull = false;
   public clue: Clue | null = null;
   public userClues: Clue[] = [];
   public huntList: HuntInfo[] = [];
   public active: string[] = [];
+  public dragging = false;
   public foundText = '';
 
   public get viewClue(): Clue | null {
@@ -116,6 +137,9 @@ export default class ScavengerView extends Vue {
     }
 
     for (const h of this.huntList) {
+      if (!('clues' in h)) {
+        h.clues = [];
+      }
       h.clues = h.clues.sort((a, b) => a.id < b.id ? 1 : a.id > b.id ? -1 : 0);
       for (let c = h.clues.length; c < h.numClues; c++) {
         h.clues.push(new Clue('???', '', h.id, String(h.id + c + 100)));
@@ -125,6 +149,10 @@ export default class ScavengerView extends Vue {
 
   public async mounted() {
     await this.init();
+  }
+
+  public log(msg: string) {
+    console.log(msg);
   }
 
   public percFound(h: HuntInfo): number {
@@ -150,6 +178,18 @@ export default class ScavengerView extends Vue {
     }
     this.active = [decoded];
   }
+
+  public getClueStyle(c: Clue): {[index: string]: string} | null {
+    if (c.mapPiece) {
+      return {
+        top: c.mapPiece.top + 'px',
+        left: c.mapPiece.left + 'px',
+        width: c.mapPiece.width + 'px',
+        height: c.mapPiece.height + 'px',
+      };
+    }
+    return null;
+  }
 }
 </script>
 
@@ -166,4 +206,63 @@ export default class ScavengerView extends Vue {
 
 .dragover
   background-color: rgba(0, 0, 0, 0.8)
+
+.grab
+  cursor: -webkit-grab
+  cursor: -moz-grab
+  cursor: grab
+
+.dragbox
+  overflow hidden
+
+ul#star_map
+  width 1500px
+  height 725.47px
+  background-image url('/img/star_map.png')
+  background-size contain
+  list-style none
+  margin 0
+  padding 0
+  position relative
+
+  li
+    position absolute
+
+.subheading u
+  cursor pointer
+  text-decoration-style dashed
+
+.none
+  background-image url('/img/none.svg')
+
+.alliance
+  background-image url('/img/alliance.svg')
+
+.yeerk
+  background-image url('/img/yeerk.svg')
+
+.imperial
+  background-image url('/img/imperial.svg')
+
+.republic
+  background-image url('/img/republic.svg')
+
+.dalek
+  background-image url('/img/dalek.svg')
+
+.maquis
+  background-image url('/img/maquis.svg')
+
+.breen
+  background-image url('/img/breen.svg')
+
+.borg
+  background-image url('/img/borg.svg')
+
+.talshiar
+  background-image url('/img/talshiar.svg')
+
+.orion
+  background-image url('/img/orion.svg')
+
 </style>

@@ -26,6 +26,7 @@ type Event struct {
 	HideAgenda bool      `json:"hideAgenda"`
 }
 
+// MarshalJSON custom marshalling
 func (e *Event) MarshalJSON() ([]byte, error) {
 	type Alias Event
 	return json.Marshal(&struct {
@@ -37,6 +38,7 @@ func (e *Event) MarshalJSON() ([]byte, error) {
 	})
 }
 
+// UnmarshalJSON custom unmarshalling
 func (e *Event) UnmarshalJSON(data []byte) error {
 	type Alias Event
 	aux := &struct {
@@ -55,14 +57,17 @@ func (e *Event) UnmarshalJSON(data []byte) error {
 	return err
 }
 
+// TableName specify the table name for GORM
 func (Event) TableName() string {
 	return "knkevents"
 }
 
+// DraftEvent is just an Event but used for drafts
 type DraftEvent struct {
 	Event
 }
 
+// TableName export the draft table name
 func (DraftEvent) TableName() string {
 	return "knk_draft_events"
 }

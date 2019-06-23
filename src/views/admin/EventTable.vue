@@ -198,10 +198,10 @@ export default class EventTable extends Vue {
   }
 
   public get organizerList(): string[] {
-    return Array.from(this.events.reduce((acc, cv) => {
+    return Array.from(this.events.reduce((acc: Set<string>, cv: Event) => {
       cv.organizer.split(',').map((o) => o.trim()).forEach(acc.add.bind(acc));
       return acc;
-    }, new Set()));
+    }, new Set<string>()));
   }
 
   public get daySelect(): moment.Moment[] {

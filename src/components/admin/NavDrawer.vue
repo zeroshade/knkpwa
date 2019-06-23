@@ -100,6 +100,7 @@ export default class AdminNavDrawer extends Vue {
   @Action('fetchScheds') public fetchScheds!: () => Promise<void>;
   @State('schedules') public schedules!: Schedule[];
   @mod.Action('loadHunts') public loadHunts!: () => Promise<void>;
+  @mod.Action('loadMapPieces') public loadMapPieces!: () => Promise<void>;
   @mod.State('hunts') public hunts!: Hunt[];
 
   public mounted() {
@@ -108,6 +109,7 @@ export default class AdminNavDrawer extends Vue {
     }
     if (!this.hunts.length) {
       this.loadHunts();
+      this.loadMapPieces();
     }
   }
 }

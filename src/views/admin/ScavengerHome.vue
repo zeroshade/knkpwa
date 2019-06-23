@@ -12,6 +12,14 @@
           <v-spacer />
           <v-btn @click='huntEdit()'>Rename</v-btn>
         </v-card-title>
+        <v-card-text>
+          <img class='zoomimg' @click='zoomimg = true' src='@/assets/star_map_complete.png' />
+          <v-dialog v-model='zoomimg' transition='scale-transition' lazy width='75%'>
+            <div v-dragscroll style='width: 100%; overflow: hidden; cursor: grab'>
+              <img src='@/assets/star_map_complete.png' width='1500px'/>
+            </div>
+          </v-dialog>
+        </v-card-text>
       </v-card>
     </v-flex>
 
@@ -40,6 +48,9 @@
             </td>
             <td>
               <p style='cursor: pointer' @click='textEdit(item)'>{{ item.text }}</p>
+            </td>
+            <td>
+              <p style='cursor: pointer' @click='textEdit(item)'>{{ item.mapPiece ? item.mapPiece.title : '' }}</p>
             </td>
             <td class='justify-center px-0' width='10%'>
               <v-btn small icon @click='clueEdit = item; confirmDialog = true;'>
@@ -121,15 +132,29 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <v-dialog v-model='clueDialog' persistent max-width='300'>
+    <v-dialog v-model='clueDialog' persistent max-width='500'>
       <v-card>
         <v-card-title class='headline pb-1'>{{ clueEdit === null ? 'New' : 'Edit' }} Clue</v-card-title>
         <v-divider />
         <v-card-text>
-          <v-text-field v-if='clueEdit === null' label='Clue Title' v-model='newTitle'
-            :rules='[v => !!v || "Cannot be empty"]' />
-          <v-text-field v-else label='Clue Title' v-model='clueEdit.title'
-            :rules='[v => !!v || "Cannot be empty"]' />
+          <v-layout>
+            <v-flex xs7>
+              <v-text-field v-if='clueEdit === null' label='Clue Title' v-model='newTitle'
+                :rules='[v => !!v || "Cannot be empty"]' />
+              <v-text-field v-else label='Clue Title' v-model='clueEdit.title'
+                :rules='[v => !!v || "Cannot be empty"]' />
+            </v-flex>
+            <v-flex offset-xs1 xs4>
+              <v-select v-if='clueEdit === null' clearable v-model='newMapReveal'
+                :items='availPieces' item-text='title'
+                item-value='id' label='Reveals Map Area'
+                persistent-hint hint="Leave blank if doesn't reveal" />
+              <v-select v-else clearable v-model='clueEdit.mapId'
+                :items='availPieces' item-text='title'
+                item-value='id' label='Reveals Map Area'
+                persistent-hint hint="Leave blank if doesn't reveal" />
+            </v-flex>
+          </v-layout>
           <v-textarea v-if='clueEdit === null' label='Clue Text' v-model='newText'
             :rules='[v => !!v || "Cannot be empty"]' />
           <v-textarea v-else label='Clue Text' v-model='clueEdit.text'
@@ -138,7 +163,7 @@
         <v-divider/>
         <v-card-actions>
           <v-spacer />
-          <v-btn flat @click='clueDialog = false; clueEdit = null; newText = ""'>
+          <v-btn flat @click='clueDialog = false; clueEdit = null; newText = ""; newMapReveal = undefined'>
             Close
           </v-btn>
           <v-btn v-if='clueEdit === null' :disabled='newText.length === 0' flat @click='newClue'>
@@ -156,7 +181,7 @@
 <script lang='ts'>
 import { Component, Vue, Prop } from 'vue-property-decorator';
 import QrCodeComponent from 'vue-qrcode-component';
-import { Hunt, Clue } from '@/api/hunt';
+import { Hunt, Clue, MapPiece } from '@/api/hunt';
 import { State, Action } from 'vuex-class';
 import { Chrome } from 'vue-color';
 import ColorMenu from '@/components/admin/ColorMenu.vue';
@@ -171,6 +196,7 @@ import ColorMenu from '@/components/admin/ColorMenu.vue';
 export default class ScavengerHome extends Vue {
   @Prop(Number) public id!: number;
   @State((state) => state.admin.scavenger.hunts) public hunts!: Hunt[];
+  @State((state) => state.admin.scavenger.mapPieces) public pieces!: MapPiece[];
   @Action('admin/scavenger/addClue') public addClue!: (c: Clue) => Promise<void>;
   @Action('admin/scavenger/updateClue') public updateClue!: (c: Clue) => Promise<void>;
   @Action('admin/scavenger/deleteClue') public deleteClue!: (c: Clue) => Promise<void>;
@@ -179,19 +205,28 @@ export default class ScavengerHome extends Vue {
   public newTitle = '';
   public newDesc = '';
   public newText = '';
+  public newMapReveal: null | number = null;
   public clueDialog = false;
   public confirmDialog = false;
   public qrEdit = false;
   public editHunt = false;
   public search = '';
   public clueEdit: Clue | null = null;
+  public zoomimg = false;
   public color = '';
   public headers = [
     { text: 'QR', align: 'left', sortable: false },
     { text: 'Title', align: 'left', sortable: true, value: 'title' },
     { text: 'Text', sortable: true, value: 'text' },
+    { text: 'Reveals', sortable: true, value: 'mapPiece.title' },
     { text: '', sortable: false },
   ];
+
+  public get availPieces(): MapPiece[] {
+    return this.pieces.filter((p) => (this.clueEdit && this.clueEdit.mapId === p.id) ||
+      this.newMapReveal === p.id ||
+      this.curHunt.clues.findIndex((c) => p.id === c.mapId) === -1);
+  }
 
   public get curHunt(): Hunt {
     return this.hunts.find((h) => this.id === h.id) || new Hunt();
@@ -222,7 +257,7 @@ export default class ScavengerHome extends Vue {
   }
 
   public newClue() {
-    this.addClue(new Clue(this.newTitle, this.newText, this.curHunt.id));
+    this.addClue(new Clue(this.newTitle, this.newText, this.curHunt.id, undefined, this.pieces.find((p) => p.id === this.newMapReveal)));
     this.newTitle = '';
     this.newText = '';
     this.clueDialog = false;
@@ -230,6 +265,12 @@ export default class ScavengerHome extends Vue {
 
   public saveClue() {
     if (this.clueEdit === null) { return; }
+
+    if (this.clueEdit.mapId) {
+      this.clueEdit.mapPiece = this.pieces.find((p) => this.clueEdit && p.id === this.clueEdit.mapId);
+    } else {
+      this.clueEdit.mapPiece = undefined;
+    }
     this.updateClue(this.clueEdit);
     this.clueDialog = false;
     this.qrEdit = false;
@@ -237,3 +278,9 @@ export default class ScavengerHome extends Vue {
   }
 }
 </script>
+
+<style lang="stylus" scoped>
+.zoomimg
+  width 90%
+  cursor zoom-in
+</style>
