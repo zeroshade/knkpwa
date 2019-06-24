@@ -64,6 +64,8 @@ func main() {
 		&DraftEvent{}, &RoomOrdering{}, &Hunt{}, &Clue{}, &UserClue{}, &MapPiece{})
 	db.Model(&Clue{}).AddForeignKey("hunt_id", Hunt{}.TableName()+"(id)", "CASCADE", "RESTRICT")
 	db.Model(&UserClue{}).AddForeignKey("clue_id", Clue{}.TableName()+"(id)", "CASCADE", "RESTRICT")
+	db.Model(&MapPiece{}).AddForeignKey("hunt_id", MapPiece{}.TableName()+"(id)", "CASCADE", "RESTRICT")
+	db.Model(&MapPiece{}).Association("Clues")
 
 	config := cors.DefaultConfig()
 	config.AllowHeaders = append(config.AllowHeaders, "Authorization")
@@ -90,6 +92,7 @@ func main() {
 	router.PUT("/hunts/clue", AddClue(db))
 	router.POST("/hunts/clue", UpdateClue(db))
 	router.DELETE("/hunts/clue/:id", DeleteClue(db))
+	router.POST("/hunts/maps/:id", UpdateMapClueList(db))
 	router.GET("/hunts/clue/:id", GetClue(db))
 	router.GET("/my/clues", checkJWT(), GetUserClueList(db))
 	router.PUT("/my/clues/:id", checkJWT(), AddUserClue(db))

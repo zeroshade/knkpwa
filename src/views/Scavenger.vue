@@ -36,11 +36,9 @@
             <v-divider vertical />
             <v-flex xs12 md6>
               <v-card-text>
+                <p v-if='viewClue' class='title'>Clue Text:</p>
                 <p v-if='viewClue'>
                   {{viewClue.text}}
-                </p>
-                <p v-if='viewClue && viewClue.mapPiece'>
-                  <strong>Reveals:</strong> {{ viewClue.mapPiece.title }}
                 </p>
               </v-card-text>
             </v-flex>
@@ -52,9 +50,9 @@
       <v-card>
         <div class='dragbox grab' style='width: 500px; height: 500px;' v-dragscroll>
           <ul id='star_map'>
-            <li v-for='c in userClueMapPieces' :key='c.id'
-              :style='getClueStyle(c)'
-              :class='c.class'></li>
+            <li v-for='p in piecesFound' :key='p.id'
+              :style='getClueStyle(p)'
+              :class='p.class'></li>
           </ul>
         </div>
       </v-card>
@@ -104,6 +102,7 @@ export default class ScavengerView extends Vue {
   @Action('scavenger/getUserClues') public getUserClues!: () => Promise<Clue[]>;
   @Action('scavenger/getHuntInfo') public getHuntList!: () => Promise<HuntInfo[]>;
   @Action('scavenger/addUserClue') public addUserClue!: (id: string) => Promise<void>;
+  @Action('scavenger/getMapPieceInfo') public getMapPieces!: () => Promise<MapPiece[]>;
 
   public isDragging = false;
   public clueDialog = false;
@@ -112,6 +111,7 @@ export default class ScavengerView extends Vue {
   public userClues: Clue[] = [];
   public huntList: HuntInfo[] = [];
   public active: string[] = [];
+  public pieces: MapPiece[] = [];
   public dragging = false;
   public foundText = '';
 
@@ -125,9 +125,16 @@ export default class ScavengerView extends Vue {
     return isMobile;
   }
 
+  public get piecesFound(): MapPiece[] {
+    return this.pieces.filter((p) => p.clues.length > 0 &&
+      p.clues.every((c: string) => -1 !== this.userClues.findIndex((uc) => uc.id === c))
+    );
+  }
+
   public async init() {
     this.userClues = await this.getUserClues();
     this.huntList = await this.getHuntList();
+
     for (const c of this.userClues) {
       const idx = this.huntList.findIndex((h) => h.id === c.huntId);
       if (idx === -1) { continue; }
@@ -146,6 +153,8 @@ export default class ScavengerView extends Vue {
         h.clues.push(new Clue('???', '', h.id, String(h.id + c + 100)));
       }
     }
+
+    this.pieces = await this.getMapPieces();
   }
 
   public async mounted() {
@@ -178,10 +187,6 @@ export default class ScavengerView extends Vue {
       this.foundText = 'New Clue Found!';
     }
     this.active = [decoded];
-  }
-
-  public get userClueMapPieces(): MapPiece[] {
-    return this.userClues.filter((c) => c.mapPiece).map((m) => m.mapPiece) as MapPiece[];
   }
 
   public getClueStyle(m: MapPiece): {[index: string]: string} | null {

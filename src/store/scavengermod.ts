@@ -6,14 +6,10 @@ const scavengerModule: Module<ScavengerState, RootState> = {
   namespaced: true,
   state: {
     hunts: [],
-    mapPieces: [],
   },
   mutations: {
     setHunts(state: ScavengerState, payload: Hunt[]) {
       state.hunts = payload;
-    },
-    setMapPieces(state: ScavengerState, payload: MapPiece[]) {
-      state.mapPieces = payload;
     },
     updateHunt(state: ScavengerState, payload: Hunt) {
       const idx = state.hunts.findIndex((h) => h.id === payload.id);
@@ -22,6 +18,22 @@ const scavengerModule: Module<ScavengerState, RootState> = {
       } else {
         state.hunts.push(payload);
       }
+    },
+    updateMapPiece(state: ScavengerState, payload: MapPiece) {
+      const idx = state.hunts.findIndex((h) => h.id === payload.huntId);
+      if (idx === -1) {
+        throw new Error('Could not find Hunt!');
+      }
+
+      const hunt = state.hunts[idx];
+      const pieceIdx = hunt.mapPieces.findIndex((m) => m.id === payload.id);
+      if (pieceIdx !== -1) {
+        hunt.mapPieces.splice(pieceIdx, 1, payload);
+      } else {
+        hunt.mapPieces.push(payload);
+      }
+
+      state.hunts.splice(idx, 1, hunt);
     },
     updateClue(state: ScavengerState, payload: Clue) {
       const idx = state.hunts.findIndex((h) => h.id === payload.huntId);
@@ -82,13 +94,6 @@ const scavengerModule: Module<ScavengerState, RootState> = {
       }, {root: true});
       commit('setHunts', (await h.json()).map((o: IHunt) => new Hunt(o)));
     },
-    async loadMapPieces({commit, dispatch}) {
-      const m = await dispatch('auth/makeAuthedRequest', {
-        path: '/huntinfo/maps',
-        method: 'GET',
-      }, {root: true});
-      commit('setMapPieces', (await m.json()));
-    },
     async addClue({ commit, dispatch }, payload: Clue) {
       await dispatch('auth/makeAuthedRequest', {
         path: '/hunts/clue',
@@ -111,6 +116,14 @@ const scavengerModule: Module<ScavengerState, RootState> = {
         method: 'DELETE',
       }, {root: true});
       commit('deleteClue', payload);
+    },
+    async updateMapPieceClues({commit, dispatch}, payload: MapPiece) {
+      await dispatch('auth/makeAuthedRequest', {
+        path: `/hunts/maps/${payload.id}`,
+        method: 'POST',
+        body: { ids: payload.clues },
+      }, {root: true});
+      commit('updateMapPiece', payload);
     },
   },
 };

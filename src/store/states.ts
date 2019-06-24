@@ -13,7 +13,6 @@ export interface AdminState {
 
 export interface ScavengerState {
   hunts: Hunt[];
-  mapPieces: MapPiece[];
 }
 
 export interface AuthState {

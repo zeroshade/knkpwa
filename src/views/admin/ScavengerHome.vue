@@ -66,6 +66,26 @@
         </v-data-table>
       </v-card>
     </v-flex>
+
+    <v-flex xs12>
+      <v-card class='mt-3 mb-3'>
+        <v-card-title primary-title>
+          <p class='headline'>Map Pieces</p>
+        </v-card-title>
+        <v-data-table :items='curHunt.mapPieces' class='elevation-1'
+          :headers='[{ text: "Title", value: "title" }, { text: "Associated Clues", value: "clueList" }]'
+          :rows-per-page-items='[10, 20,{"text": "$vuetify.dataIterator.rowsPerPageAll","value": -1}]'>
+        <template slot='items' slot-scope='{ item }'>
+          <td width='10%'>{{ item.title }}</td>
+          <td><v-select :items='curHunt.clues' attach chips multiple
+                @input='updateMapPiece(item)'
+                label='Revealed when selected clues are Scanned' v-model='item.clues'
+                item-text='title' item-value='id' dense deletable-chips hide-selected small-chips /></td>
+        </template>
+        </v-data-table>
+      </v-card>
+    </v-flex>
+
     <v-dialog v-model='editHunt' persistent max-width='500'>
       <v-card>
         <v-card-title class='headline pb-1'>Edit Hunt Info</v-card-title>
@@ -145,14 +165,14 @@
                 :rules='[v => !!v || "Cannot be empty"]' />
             </v-flex>
             <v-flex offset-xs1 xs4>
-              <v-select v-if='clueEdit === null' clearable v-model='newMapReveal'
+              <!-- <v-select v-if='clueEdit === null' clearable v-model='newMapReveal'
                 :items='availPieces' item-text='title'
                 item-value='id' label='Reveals Map Area'
                 persistent-hint hint="Leave blank if doesn't reveal" />
               <v-select v-else clearable v-model='clueEdit.mapId'
                 :items='availPieces' item-text='title'
                 item-value='id' label='Reveals Map Area'
-                persistent-hint hint="Leave blank if doesn't reveal" />
+                persistent-hint hint="Leave blank if doesn't reveal" /> -->
             </v-flex>
           </v-layout>
           <v-textarea v-if='clueEdit === null' label='Clue Text' v-model='newText'
@@ -196,11 +216,11 @@ import ColorMenu from '@/components/admin/ColorMenu.vue';
 export default class ScavengerHome extends Vue {
   @Prop(Number) public id!: number;
   @State((state) => state.admin.scavenger.hunts) public hunts!: Hunt[];
-  @State((state) => state.admin.scavenger.mapPieces) public pieces!: MapPiece[];
   @Action('admin/scavenger/addClue') public addClue!: (c: Clue) => Promise<void>;
   @Action('admin/scavenger/updateClue') public updateClue!: (c: Clue) => Promise<void>;
   @Action('admin/scavenger/deleteClue') public deleteClue!: (c: Clue) => Promise<void>;
   @Action('admin/scavenger/updateHunt') public updateHunt!: (h: Hunt) => Promise<void>;
+  @Action('admin/scavenger/updateMapPieceClues') public updateMapPiece!: (m: MapPiece) => Promise<void>;
 
   public newTitle = '';
   public newDesc = '';
@@ -221,12 +241,6 @@ export default class ScavengerHome extends Vue {
     { text: 'Reveals', sortable: true, value: 'mapPiece.title' },
     { text: '', sortable: false },
   ];
-
-  public get availPieces(): MapPiece[] {
-    return this.pieces.filter((p) => (this.clueEdit && this.clueEdit.mapId === p.id) ||
-      this.newMapReveal === p.id ||
-      this.curHunt.clues.findIndex((c) => p.id === c.mapId) === -1);
-  }
 
   public get curHunt(): Hunt {
     return this.hunts.find((h) => this.id === h.id) || new Hunt();
@@ -257,7 +271,7 @@ export default class ScavengerHome extends Vue {
   }
 
   public newClue() {
-    this.addClue(new Clue(this.newTitle, this.newText, this.curHunt.id, undefined, this.pieces.find((p) => p.id === this.newMapReveal)));
+    this.addClue(new Clue(this.newTitle, this.newText, this.curHunt.id, undefined));
     this.newTitle = '';
     this.newText = '';
     this.clueDialog = false;
@@ -266,11 +280,6 @@ export default class ScavengerHome extends Vue {
   public saveClue() {
     if (this.clueEdit === null) { return; }
 
-    if (this.clueEdit.mapId) {
-      this.clueEdit.mapPiece = this.pieces.find((p) => this.clueEdit && p.id === this.clueEdit.mapId);
-    } else {
-      this.clueEdit.mapPiece = undefined;
-    }
     this.updateClue(this.clueEdit);
     this.clueDialog = false;
     this.qrEdit = false;
