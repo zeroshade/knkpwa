@@ -49,9 +49,6 @@
             <td>
               <p style='cursor: pointer' @click='textEdit(item)'>{{ item.text }}</p>
             </td>
-            <td>
-              <p style='cursor: pointer' @click='textEdit(item)'>{{ item.mapPiece ? item.mapPiece.title : '' }}</p>
-            </td>
             <td class='justify-center px-0' width='10%'>
               <v-btn small icon @click='clueEdit = item; confirmDialog = true;'>
                 <v-icon small>delete</v-icon>
@@ -164,16 +161,6 @@
               <v-text-field v-else label='Clue Title' v-model='clueEdit.title'
                 :rules='[v => !!v || "Cannot be empty"]' />
             </v-flex>
-            <v-flex offset-xs1 xs4>
-              <!-- <v-select v-if='clueEdit === null' clearable v-model='newMapReveal'
-                :items='availPieces' item-text='title'
-                item-value='id' label='Reveals Map Area'
-                persistent-hint hint="Leave blank if doesn't reveal" />
-              <v-select v-else clearable v-model='clueEdit.mapId'
-                :items='availPieces' item-text='title'
-                item-value='id' label='Reveals Map Area'
-                persistent-hint hint="Leave blank if doesn't reveal" /> -->
-            </v-flex>
           </v-layout>
           <v-textarea v-if='clueEdit === null' label='Clue Text' v-model='newText'
             :rules='[v => !!v || "Cannot be empty"]' />
@@ -238,7 +225,6 @@ export default class ScavengerHome extends Vue {
     { text: 'QR', align: 'left', sortable: false },
     { text: 'Title', align: 'left', sortable: true, value: 'title' },
     { text: 'Text', sortable: true, value: 'text' },
-    { text: 'Reveals', sortable: true, value: 'mapPiece.title' },
     { text: '', sortable: false },
   ];
 

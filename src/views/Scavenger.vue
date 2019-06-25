@@ -2,53 +2,93 @@
   <v-container fluid>
     <v-layout wrap>
       <v-flex xs12>
-        <v-card class='mb-4'>
-          <v-toolbar card color='grey darken-2'>
-            <v-toolbar-title>Scavenger Hunt Clues</v-toolbar-title>
-            <p class='subheading mb-0 mt-2 ml-3 font-weight-light text-capitalize'>
-              <u @click='viewFull = true'>view map</u>
-            </p>
-            <v-spacer />
-            <v-btn icon @click='clueDialog = true'>
-              <v-icon>camera_rear</v-icon>
-            </v-btn>
-          </v-toolbar>
-          <v-layout wrap>
-            <v-flex>
-              <v-card-text>
-                <v-treeview
-                  activatable
-                  :active.sync='active'
-                  item-children='clues'
-                  item-text='title'
-                  open-on-click
-                  :open='huntList.map((h) => h.id)'
-                  :items='huntList'>
-                  <template v-slot:append='{ item, leaf }'>
-                    <v-progress-circular v-if='!leaf'
-                      rotate='-90'
-                      color='blue'
-                      :value='percFound(item)' />
-                  </template>
-                </v-treeview>
-              </v-card-text>
-            </v-flex>
-            <v-divider vertical />
-            <v-flex xs12 md6>
-              <v-card-text>
-                <p v-if='viewClue' class='title'>Clue Text:</p>
-                <p v-if='viewClue'>
-                  {{viewClue.text}}
-                </p>
-              </v-card-text>
-            </v-flex>
-          </v-layout>
-        </v-card>
+        <v-stepper alt-labels v-model='huntStep' v-if='huntList.length > 0'>
+          <v-stepper-header>
+            <v-stepper-step :complete='huntStep > 1' step='1'>{{ huntList[0].title }}</v-stepper-step>
+            <v-divider />
+            <v-stepper-step :complete='huntStep > 2' step='2'>{{ huntList[1].title }}</v-stepper-step>
+            <v-divider />
+            <v-stepper-step :complete='huntStep > 3' step='3'>Solved!</v-stepper-step>
+          </v-stepper-header>
+          <v-stepper-items>
+            <v-stepper-content step='1'>
+              <v-card class='mb-4'>
+                <v-card-title v-if='huntList.length > 0'>
+                  <p class='title'>{{ huntList[0].title }}</p>
+                </v-card-title>
+                <v-toolbar card color='grey darken-2'>
+                  <p class='mb-0 mt-1 ml-2 font-weight-light text-capitalize'>
+                    <u @click='viewDesc = true'>view hunt description</u>
+                  </p>
+                  <p class='mb-0 mt-1 ml-2 font-weight-light text-capitalize'>
+                    <u @click='viewFull = true'>view hunt map</u>
+                  </p>
+                  <v-spacer />
+                  <v-btn icon @click='clueDialog = true'>
+                    <v-icon>camera_rear</v-icon>
+                  </v-btn>
+                </v-toolbar>
+                <v-layout wrap>
+                  <v-flex>
+                    <v-card-text>
+                      <v-treeview
+                        activatable
+                        :active.sync='active'
+                        :items='[
+                          {title: "Clues Found (tap to see!)", children: userClues, id: "clues"},
+                          {title: "Map Pieces Revealed", children: piecesFound, id: "mapPieces"},
+                        ]'
+                        item-children='children'
+                        item-text='title'
+                        open-on-click>
+                        <template v-slot:append='{ item, leaf }'>
+                          <v-progress-circular v-if='!leaf'
+                            rotate='-90'
+                            color='blue'
+                            :value='perc(item)'>
+                            {{ perc(item) }}%
+                          </v-progress-circular>
+                        </template>
+                      </v-treeview>
+                    </v-card-text>
+                  </v-flex>
+                  <v-divider vertical />
+                  <v-flex xs12 md6>
+                    <v-card-text>
+                      <p v-if='viewClue' class='title'>Clue Text:</p>
+                      <p v-if='viewClue'>
+                        {{viewClue.text}}
+                      </p>
+                    </v-card-text>
+                  </v-flex>
+                </v-layout>
+                <v-card-actions>
+                  <v-spacer />
+                  <v-btn>Make A Guess! &nbsp;&nbsp; <small>Doesn't work yet</small></v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-stepper-content>
+            <v-stepper-content step='2'>
+            </v-stepper-content>
+            <v-stepper-content step='3'>
+            </v-stepper-content>
+          </v-stepper-items>
+        </v-stepper>
       </v-flex>
     </v-layout>
+    <v-dialog lazy v-model='viewDesc' max-width='500'>
+      <v-card>
+        <v-card-title>
+          <p class='title'>Hunt Description</p>
+        </v-card-title>
+        <v-card-text v-if='huntList.length > 0'>
+          {{ huntList[0].desc }}
+        </v-card-text>
+      </v-card>
+    </v-dialog>
     <v-dialog lazy v-model='viewFull' max-width='500'>
       <v-card>
-        <div class='dragbox grab' style='width: 500px; height: 500px;' v-dragscroll>
+        <div class='dragbox grab' style='width: 100%; height: 500px;' v-dragscroll>
           <ul id='star_map'>
             <li v-for='p in piecesFound' :key='p.id'
               :style='getClueStyle(p)'
@@ -57,18 +97,23 @@
         </div>
       </v-card>
     </v-dialog>
-    <v-dialog lazy persistent v-model='clueDialog' max-width='500'>
+    <v-snackbar v-model='foundSnack' top :timeout='20000'>
+      {{ foundText }}
+      <v-btn color='pink' flat @click='foundSnack = false'>
+        Close
+      </v-btn>
+    </v-snackbar>
+    <v-dialog lazy v-model='clueDialog' max-width='500'>
       <v-card>
         <v-card-title class='headline pb-2'>Register New Clue</v-card-title>
         <v-divider />
         <v-card-text>
-          <p v-if='foundText'>{{ foundText }}</p>
           <qrcode-drop-zone v-if='!mobile' @dragover='onDragOver' @decode='onDecode'>
             <div class='drop-area' :class='{ "dragover": isDragging }'>
               DROP IMAGE
             </div>
           </qrcode-drop-zone>
-          <qrcode-stream class='drop-area' style='height: 270px' v-else @decode='onDecode'>
+          <qrcode-stream class='drop-area' style='height: 270px' v-else-if='clueDialog' @decode='onDecode'>
           </qrcode-stream>
         </v-card-text>
         <v-divider />
@@ -114,6 +159,9 @@ export default class ScavengerView extends Vue {
   public pieces: MapPiece[] = [];
   public dragging = false;
   public foundText = '';
+  public foundSnack = false;
+  public viewDesc = false;
+  public huntStep = 1;
 
   public get viewClue(): Clue | null {
     if (this.active.length === 0) { return null; }
@@ -165,6 +213,17 @@ export default class ScavengerView extends Vue {
     console.log(msg);
   }
 
+  public perc(item: {id: string}): number {
+    if (this.huntList.length === 0) { return 0; }
+    if (item.id === 'clues') {
+      return Math.round(this.userClues.length / this.huntList[0].numClues * 100);
+    } else if (item.id === 'mapPieces') {
+      return Math.round(this.piecesFound.length / this.huntList[0].numMaps * 100);
+    } else {
+      return 0;
+    }
+  }
+
   public percFound(h: HuntInfo): number {
     const i = h.clues.reduce((acc, cv) => acc + ((cv.title !== '???') ? 1 : 0), 0);
     return i / h.numClues * 100;
@@ -179,6 +238,7 @@ export default class ScavengerView extends Vue {
   }
 
   public async onDecode(decoded: string) {
+    console.log(decoded);
     if (this.clueFound(decoded)) {
       this.foundText = 'You\'ve already found this one!!';
     } else {
@@ -186,7 +246,9 @@ export default class ScavengerView extends Vue {
       await this.init();
       this.foundText = 'New Clue Found!';
     }
+    this.foundSnack = true;
     this.active = [decoded];
+    this.clueDialog = false;
   }
 
   public getClueStyle(m: MapPiece): {[index: string]: string} | null {
@@ -235,9 +297,10 @@ ul#star_map
   li
     position absolute
 
-.subheading u
+p > u
   cursor pointer
   text-decoration-style dashed
+  text-underline-position under
 
 .none
   background-image url('/img/none.svg')
