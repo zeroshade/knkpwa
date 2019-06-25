@@ -1,6 +1,6 @@
 <template>
   <v-layout wrap>
-    <v-flex xs10>
+    <v-flex xs7>
       <v-card class='mb-3'>
         <v-card-title primary-title>
           <div>
@@ -22,7 +22,22 @@
         </v-card-text>
       </v-card>
     </v-flex>
-
+    <v-flex offset-xs1 xs3>
+      <v-card class='mb-3'>
+        <v-card-title primary-title>
+          <p class='headline'><strong>Solution</strong></p>
+        </v-card-title>
+        <v-card-text>
+          <p><small><em><u>Not Yet Hooked Up</u></em></small></p>
+          <p>Sector:</p>
+          <p>Enemy:</p>
+          <p>Sabotage:</p>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn>Save</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-flex>
     <v-flex xs12>
       <v-card>
         <v-card-title>
