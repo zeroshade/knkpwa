@@ -121,7 +121,7 @@
     <clue-table :cur-hunt='curHunt' />
 
     <v-flex xs12>
-      <v-card class='mt-3 mb-3'>
+      <v-card class='mt-3 mb-5'>
         <v-card-title primary-title>
           <p class='headline'>Map Pieces</p>
         </v-card-title>
@@ -130,9 +130,9 @@
           :rows-per-page-items='[10, 20,{"text": "$vuetify.dataIterator.rowsPerPageAll","value": -1}]'>
         <template slot='items' slot-scope='{ item }'>
           <td width='10%'>{{ item.title }}</td>
-          <td><v-select :items='curHunt.clues' attach chips multiple
-                @input='updateMapPiece(item)'
-                label='Revealed when selected clues are Scanned' v-model='item.clues'
+          <td><v-select :items='curHunt.clues' chips multiple
+                :menu-props='{ maxHeight: 200, allowOverflow: true, zIndex: 300 }'
+                @input='updateMapPiece(item)' label='Revealed when selected clues are Scanned' v-model='item.clues'
                 item-text='title' item-value='id' dense deletable-chips hide-selected small-chips /></td>
         </template>
         </v-data-table>
