@@ -109,7 +109,7 @@ export default class NewScavenger extends Vue {
   }
 
   public async createNewHunt() {
-    await this.saveHunt(new Hunt({id: -1, title: this.newTitle, desc: this.newDesc, clues: [], type: '', mapPieces: []}));
+    await this.saveHunt(new Hunt({id: -1, title: this.newTitle, desc: this.newDesc, clues: [], type: '', mapPieces: [], answers: []}));
     this.newHunt = false;
     await this.loadHunts();
     this.newTitle = '';

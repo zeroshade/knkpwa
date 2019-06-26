@@ -60,7 +60,7 @@ func main() {
 	}
 	defer db.Close()
 
-	db.AutoMigrate(&Subscription{}, &Schedule{}, &Event{}, &ColorMap{},
+	db.AutoMigrate(&Subscription{}, &Schedule{}, &Event{}, &ColorMap{}, &Solution{},
 		&DraftEvent{}, &RoomOrdering{}, &Hunt{}, &Clue{}, &UserClue{}, &MapPiece{})
 	db.Model(&Clue{}).AddForeignKey("hunt_id", Hunt{}.TableName()+"(id)", "CASCADE", "RESTRICT")
 	db.Model(&UserClue{}).AddForeignKey("clue_id", Clue{}.TableName()+"(id)", "CASCADE", "RESTRICT")
@@ -87,6 +87,7 @@ func main() {
 	})
 
 	router.POST("/hunt", SaveHunt(db))
+	router.POST("/hunt/:id/answers", SaveSolutions(db))
 	router.DELETE("/hunt/:id", DeleteHunt(db))
 	router.GET("/hunts", ListHunts(db))
 	router.PUT("/hunts/clue", AddClue(db))

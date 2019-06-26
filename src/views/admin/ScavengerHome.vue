@@ -22,62 +22,100 @@
         </v-card-text>
       </v-card>
     </v-flex>
-    <v-flex offset-xs1 xs3>
+    <v-flex offset-xs1 xs4>
       <v-card class='mb-3'>
-        <v-card-title primary-title>
+        <v-card-title primary-title class='mb-0 pb-0'>
           <p class='headline'><strong>Solution</strong></p>
         </v-card-title>
         <v-card-text>
-          <p><small><em><u>Not Yet Hooked Up</u></em></small></p>
-          <p>Sector:</p>
-          <p>Enemy:</p>
-          <p>Sabotage:</p>
-        </v-card-text>
-        <v-card-actions>
-          <v-btn>Save</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-flex>
-    <v-flex xs12>
-      <v-card>
-        <v-card-title>
-          <p class='headline'>Clues</p>
-          <v-spacer />
-          <v-text-field append-icon='search' label='Search'
-            single-line hide-details v-model='search' />
-        </v-card-title>
-        <v-data-table :headers='headers'
-          :items='curHunt.clues'
-          :search='search'
-          class='elevation-1'
-          :rows-per-page-items='[10,20,{"text": "$vuetify.dataIterator.rowsPerPageAll", "value": -1}]'>
-          <template slot='items' slot-scope='{ item }'>
-            <td class='pb-2 pt-2' width='100'>
-              <qr-code-component style='cursor: pointer'
-                :key='item.key()'
-                :color='item.color' :bg-color='item.bgColor'
-                :text='item.id' :size='50' @click.native='colorEdit(item)' />
-            </td>
-            <td width='10%'>
-              <p style='cursor: pointer' @click='textEdit(item)'>{{ item.title }}</p>
-            </td>
-            <td>
-              <p style='cursor: pointer' @click='textEdit(item)'>{{ item.text }}</p>
-            </td>
-            <td class='justify-center px-0' width='10%'>
-              <v-btn small icon @click='clueEdit = item; confirmDialog = true;'>
-                <v-icon small>delete</v-icon>
+          <v-list two-line dense>
+            <v-subheader>
+              Solution Parts
+              <v-btn icon small @click='curHunt.answers.push({huntId: curHunt.id, title: "New", solution: 0, options: ["Opt 1"]})'>
+                <v-icon>add_circle_outline</v-icon>
               </v-btn>
-            </td>
-          </template>
-          <template slot='footer'>
-            <td align='right' :colspan='headers.length'>
-              <v-btn @click.native='clueDialog = true'>New Clue</v-btn>
-            </td>
-          </template>
-        </v-data-table>
+            </v-subheader>
+            <v-list-tile avatar
+              v-for='(item, index) in curHunt.answers'
+              :key='index'>
+              <v-list-tile-action>
+                <v-btn icon @click='editSolution(index)'>
+                  <v-icon>edit</v-icon>
+                </v-btn>
+              </v-list-tile-action>
+
+              <v-list-tile-content>
+                <v-list-tile-title>{{item.title}}</v-list-tile-title>
+                <v-list-tile-sub-title>Answer: {{item.options[item.solution] }}</v-list-tile-sub-title>
+              </v-list-tile-content>
+
+              <v-list-tile-avatar v-if='curHunt.answers.length > 1'>
+                <v-btn icon small @click='curHunt.answers.splice(index, 1); saveAnswers({answers: curHunt.answers, id: curHunt.id});'>
+                  <v-icon small>delete</v-icon>
+                </v-btn>
+              </v-list-tile-avatar>
+            </v-list-tile>
+          </v-list>
+        </v-card-text>
       </v-card>
+      <v-dialog lazy v-model='solutionDialog' max-width='500'>
+        <v-card>
+          <v-card-title class='headline pb-1'>Edit Solution Answer</v-card-title>
+          <v-divider />
+          <v-card-text>
+            <v-text-field label='Title' v-model='tmpSolution.title' />
+            <v-radio-group v-model='tmpSolution.solution'>
+              <template v-slot:label>
+                <div>
+                  Choose the solution from options:
+                  <v-tooltip right>
+                    <template v-slot:activator="{ on }">
+                      <v-icon v-on='on' class='pb-1' small @click='tmpSolution.options.push(`Opt ${tmpSolution.options.length}`)'>add</v-icon>
+                    </template>
+                    <span>Add New Option</span>
+                  </v-tooltip>
+                </div>
+              </template>
+              <v-radio v-for='(val, idx) in tmpSolution.options' :key='idx' :value='idx'>
+                <template v-slot:label>
+                  <v-hover v-if='editorIdx != idx'>
+                    <div slot-scope='{ hover }'>
+                      {{ val }}
+                      <v-tooltip top>
+                        <template v-slot:activator='{ on }'>
+                          <v-icon v-on='on' class='pb-1 pr-1' small @click.stop.prevent='editorIdx = idx' v-if='hover'>
+                            edit
+                          </v-icon>
+                        </template>
+                        <span>Edit Option</span>
+                      </v-tooltip>
+                      <v-tooltip top>
+                        <template v-slot:activator='{ on }'>
+                          <v-icon v-on='on' class='pb-1' small @click='removeOpt(val)' v-if='hover'>
+                            delete
+                          </v-icon>
+                        </template>
+                        <span>Delete Option</span>
+                      </v-tooltip>
+                    </div>
+                  </v-hover>
+                  <v-text-field v-else append-outer-icon='save' autofocus
+                    @click:append-outer='saveOpt()' @blur='saveOpt()'
+                    class='mb-0 mt-0 pt-0' v-model='tmpSolution.options[idx]'
+                    style='height: 30px' />
+                </template>
+              </v-radio>
+            </v-radio-group>
+          </v-card-text>
+          <v-card-actions>
+            <v-btn @click='solutionDialog = false'>Cancel</v-btn>
+            <v-spacer />
+            <v-btn :disabled='tmpSolution.options.length === 0' @click='curHunt.answers[editSolutionIdx] = tmpSolution; solutionDialog = false; saveAnswers({answers: curHunt.answers, id: curHunt.id})'>Save</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-flex>
+    <clue-table :cur-hunt='curHunt' />
 
     <v-flex xs12>
       <v-card class='mt-3 mb-3'>
@@ -119,129 +157,36 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <v-dialog v-model='confirmDialog' persistent max-width='300'>
-      <v-card>
-        <v-card-title class='headline pb-1'>Confirm Delete</v-card-title>
-        <v-divider />
-        <v-card-text v-if='clueEdit !== null'>
-          Are you sure you want to delete?
-          <br /><br />
-          <em><strong>This cannot be undone</strong></em>
-        </v-card-text>
-        <v-divider />
-        <v-card-actions v-if='clueEdit !== null'>
-          <v-btn flat @click='deleteClue(clueEdit); clueEdit = null; confirmDialog = false;'>
-            Yes
-          </v-btn>
-          <v-spacer />
-          <v-btn flat @click='clueEdit = null; confirmDialog = false;'>
-            No
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    <v-dialog v-model='qrEdit' persistent max-width='500'>
-      <v-card>
-        <v-card-title class='headline pb-1'>Edit QR Code</v-card-title>
-        <v-divider />
-        <v-card-text>
-          <div style='margin: 0 auto; width: 270px; height: 270px;'>
-            <qr-code-component v-if='clueEdit !== null' :text='clueEdit.id'
-              :key='clueEdit.key()'
-              :size='250' :color='clueEdit.color' :bg-color='clueEdit.bgColor' />
-          </div>
-          <color-menu v-if='clueEdit !== null' v-model='clueEdit.color' label='color' />
-          <color-menu v-if='clueEdit !== null' v-model='clueEdit.bgColor' label='bgcolor' />
-        </v-card-text>
-        <v-card-actions>
-          <v-btn flat @click='qrEdit = false'>
-            Cancel
-          </v-btn>
-          <v-spacer />
-          <v-btn flat @click='updateClue(clueEdit); qrEdit = false'>
-            Save
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    <v-dialog v-model='clueDialog' persistent max-width='500'>
-      <v-card>
-        <v-card-title class='headline pb-1'>{{ clueEdit === null ? 'New' : 'Edit' }} Clue</v-card-title>
-        <v-divider />
-        <v-card-text>
-          <v-layout>
-            <v-flex xs7>
-              <v-text-field v-if='clueEdit === null' label='Clue Title' v-model='newTitle'
-                :rules='[v => !!v || "Cannot be empty"]' />
-              <v-text-field v-else label='Clue Title' v-model='clueEdit.title'
-                :rules='[v => !!v || "Cannot be empty"]' />
-            </v-flex>
-          </v-layout>
-          <v-textarea v-if='clueEdit === null' label='Clue Text' v-model='newText'
-            :rules='[v => !!v || "Cannot be empty"]' />
-          <v-textarea v-else label='Clue Text' v-model='clueEdit.text'
-            :rules='[v => !!v || "Cannot be empty"]' />
-        </v-card-text>
-        <v-divider/>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn flat @click='clueDialog = false; clueEdit = null; newText = ""; newMapReveal = undefined'>
-            Close
-          </v-btn>
-          <v-btn v-if='clueEdit === null' :disabled='newText.length === 0' flat @click='newClue'>
-            Create
-          </v-btn>
-          <v-btn v-else :disabled='clueEdit.text.length === 0' flat @click='saveClue'>
-            Save
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </v-layout>
 </template>
 
 <script lang='ts'>
 import { Component, Vue, Prop } from 'vue-property-decorator';
-import QrCodeComponent from 'vue-qrcode-component';
-import { Hunt, Clue, MapPiece } from '@/api/hunt';
+import { Hunt, MapPiece, Solution } from '@/api/hunt';
 import { State, Action } from 'vuex-class';
-import { Chrome } from 'vue-color';
-import ColorMenu from '@/components/admin/ColorMenu.vue';
+import ClueTable from '@/components/admin/ClueTable.vue';
 
 @Component({
   components: {
-    QrCodeComponent,
-    'chrome-picker': Chrome,
-    ColorMenu,
+    ClueTable,
   },
 })
 export default class ScavengerHome extends Vue {
   @Prop(Number) public id!: number;
   @State((state) => state.admin.scavenger.hunts) public hunts!: Hunt[];
-  @Action('admin/scavenger/addClue') public addClue!: (c: Clue) => Promise<void>;
-  @Action('admin/scavenger/updateClue') public updateClue!: (c: Clue) => Promise<void>;
-  @Action('admin/scavenger/deleteClue') public deleteClue!: (c: Clue) => Promise<void>;
   @Action('admin/scavenger/updateHunt') public updateHunt!: (h: Hunt) => Promise<void>;
   @Action('admin/scavenger/updateMapPieceClues') public updateMapPiece!: (m: MapPiece) => Promise<void>;
+  @Action('admin/scavenger/updateAnswers') public saveAnswers!: (payload: {answers: Solution[], id: number}) => Promise<void>;
 
   public newTitle = '';
   public newDesc = '';
-  public newText = '';
-  public newMapReveal: null | number = null;
-  public clueDialog = false;
-  public confirmDialog = false;
-  public qrEdit = false;
   public editHunt = false;
-  public search = '';
-  public clueEdit: Clue | null = null;
   public zoomimg = false;
-  public color = '';
-  public headers = [
-    { text: 'QR', align: 'left', sortable: false },
-    { text: 'Title', align: 'left', sortable: true, value: 'title' },
-    { text: 'Text', sortable: true, value: 'text' },
-    { text: '', sortable: false },
-  ];
+  public solutionNav = 'settings';
+  public solutionDialog = false;
+  public editSolutionIdx = 0;
+  public editorIdx = -1;
+  public tmpSolution: Solution = { huntId: this.id,  title: '', solution: -1, options: []};
 
   public get curHunt(): Hunt {
     return this.hunts.find((h) => this.id === h.id) || new Hunt();
@@ -261,30 +206,19 @@ export default class ScavengerHome extends Vue {
     this.editHunt = false;
   }
 
-  public colorEdit(c: Clue) {
-    this.clueEdit = c.clone();
-    this.qrEdit = true;
+  public editSolution(i: number) {
+    this.editSolutionIdx = i;
+    this.tmpSolution = JSON.parse(JSON.stringify(this.curHunt.answers[i]));
+    this.solutionDialog = true;
   }
 
-  public textEdit(c: Clue) {
-    this.clueEdit = c.clone();
-    this.clueDialog = true;
+  public removeOpt(opt: string) {
+    const idx = this.tmpSolution.options.findIndex((s) => s === opt);
+    this.tmpSolution.options.splice(idx, 1);
   }
 
-  public newClue() {
-    this.addClue(new Clue(this.newTitle, this.newText, this.curHunt.id, undefined));
-    this.newTitle = '';
-    this.newText = '';
-    this.clueDialog = false;
-  }
-
-  public saveClue() {
-    if (this.clueEdit === null) { return; }
-
-    this.updateClue(this.clueEdit);
-    this.clueDialog = false;
-    this.qrEdit = false;
-    this.clueEdit = null;
+  public saveOpt() {
+    this.editorIdx = -1;
   }
 }
 </script>

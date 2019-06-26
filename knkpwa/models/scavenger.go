@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 
@@ -17,10 +18,33 @@ type Hunt struct {
 	Clues    []Clue     `json:"clues,omitempty"`
 	Pieces   []MapPiece `json:"mapPieces"`
 	Type     string     `json:"type"`
+	Answers  []Solution `json:"answers"`
 }
 
 func (Hunt) TableName() string {
 	return "knkscavenger"
+}
+
+type Solution struct {
+	HuntID    uint     `json:"huntId" binding:"required"`
+	Title     string   `json:"title" binding:"required"`
+	Solution  uint     `json:"solution" binding:"required"`
+	Options   []string `json:"options" gorm:"-" binding:"required"`
+	OptionSql string   `json:"-"`
+}
+
+func (Solution) TableName() string {
+	return "knk_hunt_solutions"
+}
+
+func (s *Solution) BeforeSave() (err error) {
+	s.OptionSql = strings.Join(s.Options, "][")
+	return
+}
+
+func (s *Solution) AfterFind() (err error) {
+	s.Options = strings.Split(s.OptionSql, "][")
+	return
 }
 
 type MapPiece struct {
@@ -185,7 +209,7 @@ func DeleteHunt(db *gorm.DB) gin.HandlerFunc {
 func ListHunts(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var hunts []Hunt
-		db.Preload("Clues").Preload("Pieces").Preload("Pieces.Clues").Find(&hunts)
+		db.Preload("Clues").Preload("Answers").Preload("Pieces").Preload("Pieces.Clues").Find(&hunts)
 
 		for i, h := range hunts {
 			for j := range h.Pieces {
@@ -206,6 +230,23 @@ func AddClue(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		db.Create(&clue)
+		c.Status(http.StatusOK)
+	}
+}
+
+func SaveSolutions(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var answers []Solution
+		if err := c.ShouldBindJSON(&answers); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		db.Delete(Solution{}, "hunt_id = ?", c.Param("id"))
+		for _, s := range answers {
+			db.Create(&s)
+		}
+
 		c.Status(http.StatusOK)
 	}
 }

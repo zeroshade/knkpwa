@@ -1,6 +1,6 @@
 import { Module } from 'vuex';
 import { ScavengerState, RootState } from './states';
-import { IHunt, Hunt, Clue, MapPiece } from '@/api/hunt';
+import { IHunt, Hunt, Clue, MapPiece, Solution } from '@/api/hunt';
 
 const scavengerModule: Module<ScavengerState, RootState> = {
   namespaced: true,
@@ -8,6 +8,16 @@ const scavengerModule: Module<ScavengerState, RootState> = {
     hunts: [],
   },
   mutations: {
+    saveAnswers(state: ScavengerState, payload: {answers: Solution[], id: number}) {
+      const idx = state.hunts.findIndex((h) => h.id === payload.id);
+      if (idx === -1) {
+        throw new Error('could not find hunt!');
+      }
+
+      const hunt = state.hunts[idx];
+      hunt.answers = payload.answers;
+      state.hunts.splice(idx, 1, hunt);
+    },
     setHunts(state: ScavengerState, payload: Hunt[]) {
       state.hunts = payload;
     },
@@ -124,6 +134,14 @@ const scavengerModule: Module<ScavengerState, RootState> = {
         body: { ids: payload.clues },
       }, {root: true});
       commit('updateMapPiece', payload);
+    },
+    async updateAnswers({commit, dispatch}, payload: {answers: Solution[], id: number}) {
+      await dispatch('auth/makeAuthedRequest', {
+        path: `/hunt/${payload.id}/answers`,
+        method: 'POST',
+        body: payload.answers,
+      }, {root: true});
+      commit('saveAnswers', payload);
     },
   },
 };
