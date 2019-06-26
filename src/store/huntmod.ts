@@ -35,9 +35,9 @@ const huntModule: Module<{}, RootState> = {
 
       return ((await c.json()).map((o: IClue) => new Clue(o.title, o.text, o.huntId, o.id, o.color, o.bgColor)));
     },
-    async addUserClue({dispatch}, id: string): Promise<boolean> {
+    async addUserClue({dispatch}, payload: {clueId: string, huntId: number }): Promise<boolean> {
       const resp = await dispatch('auth/makeAuthedRequest', {
-        path: `/my/clues/${id}`,
+        path: `/my/clues/${payload.huntId}/${payload.clueId}`,
         method: 'PUT',
       }, {root: true});
       return resp.status === 200;

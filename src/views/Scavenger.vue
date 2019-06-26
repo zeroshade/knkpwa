@@ -146,7 +146,7 @@ export default class ScavengerView extends Vue {
   @Action('scavenger/getClueByID') public getClue!: (id: string) => Promise<Clue>;
   @Action('scavenger/getUserClues') public getUserClues!: () => Promise<Clue[]>;
   @Action('scavenger/getHuntInfo') public getHuntList!: () => Promise<HuntInfo[]>;
-  @Action('scavenger/addUserClue') public addUserClue!: (id: string) => Promise<boolean>;
+  @Action('scavenger/addUserClue') public addUserClue!: (payload: {clueId: string, huntId: number}) => Promise<boolean>;
   @Action('scavenger/getMapPieceInfo') public getMapPieces!: () => Promise<MapPiece[]>;
 
   public isDragging = false;
@@ -243,7 +243,7 @@ export default class ScavengerView extends Vue {
       this.foundText = 'You\'ve already found this one!!';
       this.active = [decoded];
     } else {
-      const success = await this.addUserClue(decoded);
+      const success = await this.addUserClue({clueId: decoded, huntId: this.huntStep});
       if (success) {
         await this.init();
         this.active = [decoded];
