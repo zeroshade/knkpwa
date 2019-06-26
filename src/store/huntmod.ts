@@ -1,6 +1,6 @@
 import { Module } from 'vuex';
 import { RootState } from './states';
-import { HuntInfo, Clue, IClue, MapPiece } from '@/api/hunt';
+import { HuntInfo, Clue, IClue, MapPiece, Solution } from '@/api/hunt';
 
 const huntModule: Module<{}, RootState> = {
   namespaced: true,
@@ -42,6 +42,13 @@ const huntModule: Module<{}, RootState> = {
       }, {root: true});
       return resp.status === 200;
     },
+    async getOptions({dispatch}, id: number): Promise<Solution[]> {
+      const resp = await dispatch('auth/makeAuthedRequest', {
+        path: `/huntinfo/guess/${id}`,
+        method: 'GET',
+      }, {root: true});
+      return (await resp.json());
+    }
   },
 };
 

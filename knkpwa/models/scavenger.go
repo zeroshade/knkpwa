@@ -134,11 +134,20 @@ func HuntInfo(db *gorm.DB) gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 		var ret []Ret
-		db.Table(Hunt{}.TableName()).Select("id, name, descript, (?) as num_clues, (?) as num_maps",
+		db.Table(Hunt{}.TableName()).Select("id, name, descript, map_img, (?) as num_clues, (?) as num_maps",
 			db.Table(Clue{}.TableName()).Select("count(*)").Where("hunt_id = knkscavenger.id").QueryExpr(),
 			db.Table(MapPiece{}.TableName()).Select("count(*)").Where("hunt_id = knkscavenger.id").QueryExpr()).Find(&ret)
 		c.JSON(http.StatusOK, ret)
 	}
+}
+
+func GetOptions(db *gorm.DB) gin.HandlerFunc {
+  return func(c *gin.Context) {
+    var hunt Hunt
+    db.Preload("Answers").Find(&hunt, "id = ?", c.Param("id"))
+
+    c.JSON(http.StatusOK, hunt.Answers)
+  }
 }
 
 func UpdateMapClueList(db *gorm.DB) gin.HandlerFunc {

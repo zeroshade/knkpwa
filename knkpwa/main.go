@@ -99,6 +99,7 @@ func main() {
 	router.PUT("/my/clues/:huntid/:id", checkJWT(), AddUserClue(db))
 	router.GET("/huntinfo", HuntInfo(db))
 	router.GET("/huntinfo/maps", GetMapPieces(db))
+  router.GET("/huntinfo/guess/:id", checkJWT(), GetOptions(db))
 
 	router.GET("/scheds", func(c *gin.Context) {
 		var scheds []Schedule

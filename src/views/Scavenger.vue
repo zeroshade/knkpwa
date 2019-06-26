@@ -11,10 +11,10 @@
             <v-stepper-step :complete='huntStep > 3' step='3'>Solved!</v-stepper-step>
           </v-stepper-header>
           <v-stepper-items>
-            <v-stepper-content step='1'>
+            <v-stepper-content v-for='(hunt, idx) in huntList' :key='`${idx}--content`' :step='idx + 1'>
               <v-card class='mb-4'>
                 <v-card-title v-if='huntList.length > 0'>
-                  <p class='title'>{{ huntList[0].title }}</p>
+                  <p class='title'>{{ hunt.title }}</p>
                 </v-card-title>
                 <v-toolbar card color='grey darken-2'>
                   <p class='mb-0 mt-1 ml-2 font-weight-light text-capitalize'>
@@ -35,7 +35,7 @@
                         activatable
                         :active.sync='active'
                         :items='[
-                          {title: "Clues Found (tap to see!)", children: userClues, id: "clues"},
+                          {title: "Clues Found (tap to see!)", children: curUserClues, id: "clues"},
                           {title: "Map Pieces Revealed", children: piecesFound, id: "mapPieces"},
                         ]'
                         item-children='children'
@@ -64,11 +64,9 @@
                 </v-layout>
                 <v-card-actions>
                   <v-spacer />
-                  <v-btn>Make A Guess! &nbsp;&nbsp; <small>Doesn't work yet</small></v-btn>
+                  <v-btn @click='openGuess()'>Make A Guess!</v-btn>
                 </v-card-actions>
               </v-card>
-            </v-stepper-content>
-            <v-stepper-content step='2'>
             </v-stepper-content>
             <v-stepper-content step='3'>
             </v-stepper-content>
@@ -76,20 +74,40 @@
         </v-stepper>
       </v-flex>
     </v-layout>
+    <v-dialog lazy persistent v-model='guessDiag' max-width='400'>
+      <v-card>
+        <v-card-title><p class='mb-0 title text-capitalize'>did you figure it out?</p></v-card-title>
+        <v-divider />
+        <v-card-text>
+          <v-list two-line>
+            <v-list-tile v-for='(item, index) in guessOptions' :key='index'>
+              <v-list-tile-content>
+                <v-select :items='item.options' :label='item.title' v-model='guesses[index]' />
+              </v-list-tile-content>
+            </v-list-tile>
+          </v-list>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn @click='guessDiag = false'>Cancel</v-btn>
+          <v-spacer />
+          <v-btn :disabled='checkInvalid' @click='checkGuess()'>Check Guess</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-dialog lazy v-model='viewDesc' max-width='500'>
       <v-card>
         <v-card-title>
           <p class='title'>Hunt Description</p>
         </v-card-title>
         <v-card-text v-if='huntList.length > 0'>
-          {{ huntList[0].desc }}
+          {{ huntList[huntStep - 1].desc }}
         </v-card-text>
       </v-card>
     </v-dialog>
     <v-dialog lazy v-model='viewFull' max-width='500'>
-      <v-card>
+      <v-card v-if='huntList.length > 0'>
         <div class='dragbox grab' style='width: 100%; height: 500px;' v-dragscroll>
-          <ul id='star_map'>
+          <ul id='star_map' :style='{backgroundImage: `url("/img/${huntList[huntStep - 1].mapImg}.png")`}'>
             <li v-for='p in piecesFound' :key='p.id'
               :style='getClueStyle(p)'
               :class='p.class'></li>
@@ -131,7 +149,7 @@
 <script lang='ts'>
 import { Component, Vue } from 'vue-property-decorator';
 import { QrcodeDropZone, QrcodeStream } from 'vue-qrcode-reader';
-import { Clue, Hunt, HuntInfo, MapPiece } from '@/api/hunt';
+import { Clue, Hunt, HuntInfo, MapPiece, Solution } from '@/api/hunt';
 import { Action } from 'vuex-class';
 import { isMobile } from 'mobile-device-detect';
 import { isUndefined } from 'util';
@@ -148,6 +166,7 @@ export default class ScavengerView extends Vue {
   @Action('scavenger/getHuntInfo') public getHuntList!: () => Promise<HuntInfo[]>;
   @Action('scavenger/addUserClue') public addUserClue!: (payload: {clueId: string, huntId: number}) => Promise<boolean>;
   @Action('scavenger/getMapPieceInfo') public getMapPieces!: () => Promise<MapPiece[]>;
+  @Action('scavenger/getOptions') public getOptions!: (id: number) => Promise<Solution[]>;
 
   public isDragging = false;
   public clueDialog = false;
@@ -162,6 +181,9 @@ export default class ScavengerView extends Vue {
   public foundSnack = false;
   public viewDesc = false;
   public huntStep = 1;
+  public guessDiag = false;
+  public guessOptions: Solution[] = [];
+  public guesses: string[] = [];
 
   public get viewClue(): Clue | null {
     if (this.active.length === 0) { return null; }
@@ -175,8 +197,40 @@ export default class ScavengerView extends Vue {
 
   public get piecesFound(): MapPiece[] {
     return this.pieces.filter((p) => p.clues.length > 0 &&
-      p.clues.every((c: string) => -1 !== this.userClues.findIndex((uc) => uc.id === c))
+      p.clues.every((c: string) => -1 !== this.curUserClues.findIndex((uc) => uc.id === c))
     );
+  }
+
+  public get curUserClues(): Clue[] {
+    return this.userClues.filter((c) => c.huntId === this.huntStep);
+  }
+
+  public async openGuess() {
+    this.guessOptions = await this.getOptions(this.huntStep);
+    this.guesses = Array(this.guessOptions.length);
+    this.guessDiag = true;
+  }
+
+  public checkGuess() {
+    const solved =  this.guessOptions.every((val, i) => {
+      const guess = this.guesses[i];
+      return val.solution === val.options.findIndex((o) => o === guess);
+    });
+
+    this.foundText = (solved) ? 'CORRECT!' : 'Sorry! Try Again!';
+    this.foundSnack = true;
+    this.guessDiag = false;
+
+    if (solved) {
+      this.huntStep = 2;
+    }
+  }
+
+  public get checkInvalid(): boolean {
+    for (const g of this.guesses) {
+      if (!g) { return true; }
+    }
+    return false;
   }
 
   public async init() {
@@ -216,9 +270,9 @@ export default class ScavengerView extends Vue {
   public perc(item: {id: string}): number {
     if (this.huntList.length === 0) { return 0; }
     if (item.id === 'clues') {
-      return Math.round(this.userClues.length / this.huntList[0].numClues * 100);
+      return Math.round(this.curUserClues.length / this.huntList[this.huntStep - 1].numClues * 100);
     } else if (item.id === 'mapPieces') {
-      return Math.round(this.piecesFound.length / this.huntList[0].numMaps * 100);
+      return Math.round(this.piecesFound.length / this.huntList[this.huntStep - 1].numMaps * 100);
     } else {
       return 0;
     }
@@ -292,7 +346,6 @@ export default class ScavengerView extends Vue {
 ul#star_map
   width 1500px
   height 725.47px
-  background-image url('/img/star_map.png')
   background-size contain
   list-style none
   margin 0
