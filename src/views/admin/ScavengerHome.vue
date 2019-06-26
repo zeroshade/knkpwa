@@ -13,11 +13,14 @@
           <v-btn @click='huntEdit()'>Rename</v-btn>
         </v-card-title>
         <v-card-text>
-          <img class='zoomimg' @click='zoomimg = true' src='@/assets/star_map_complete.png' />
-          <v-dialog v-model='zoomimg' transition='scale-transition' lazy width='75%'>
-            <div v-dragscroll style='width: 100%; overflow: hidden; cursor: grab'>
-              <img src='@/assets/star_map_complete.png' width='1500px'/>
-            </div>
+          <img class='zoomimg' @click='zoomimg = true' :src='`/img/${curHunt.mapImg}_complete.png`' />
+          <v-dialog v-model='zoomimg' transition='scale-transition' lazy max-width='500'>
+            <v-card>
+              <div v-dragscroll style='width: 100%; height: 500px; overflow: hidden; cursor: grab;'>
+                <ul id='map' :style='{backgroundImage: `url("/img/${curHunt.mapImg}_complete.png")`}' style='width: 1500px; height: 875px;'>
+                </ul>
+              </div>
+            </v-card>
           </v-dialog>
         </v-card-text>
       </v-card>
@@ -227,4 +230,19 @@ export default class ScavengerHome extends Vue {
 .zoomimg
   width 90%
   cursor zoom-in
+
+ul#map
+  width 1500px
+  background-size contain
+  list-style none
+  margin 0
+  padding 0
+  position relative
+
+  li
+    position absolute
+
+.none
+  background-image url('/img/none.svg')
+
 </style>

@@ -96,7 +96,7 @@ func main() {
 	router.POST("/hunts/maps/:id", UpdateMapClueList(db))
 	router.GET("/hunts/clue/:id", GetClue(db))
 	router.GET("/my/clues", checkJWT(), GetUserClueList(db))
-	router.PUT("/my/clues/:id", checkJWT(), AddUserClue(db))
+	router.PUT("/my/clues/:huntid/:id", checkJWT(), AddUserClue(db))
 	router.GET("/huntinfo", HuntInfo(db))
 	router.GET("/huntinfo/maps", GetMapPieces(db))
 

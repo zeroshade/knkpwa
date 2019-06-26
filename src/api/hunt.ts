@@ -60,6 +60,7 @@ export interface IHunt {
   type: string;
   mapPieces: MapPiece[];
   answers: Solution[];
+  mapImg?: string;
 }
 
 interface NumClues {
@@ -87,12 +88,13 @@ export class Hunt {
   public type: string = '';
   public mapPieces: MapPiece[] = [];
   public answers: Solution[] = [];
+  public mapImg: string = '';
 
   constructor(h?: IHunt) {
     if (!h) { return; }
 
-    const {id, title, desc, type, mapPieces, answers} = h;
-    Object.assign(this, {id, title, desc, type, mapPieces, answers});
+    const {id, title, desc, type, mapPieces, answers, mapImg} = h;
+    Object.assign(this, {id, title, desc, type, mapPieces, answers, mapImg});
 
     if (h.clues) {
       for (const c of h.clues) {

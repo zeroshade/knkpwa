@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -19,6 +20,7 @@ type Hunt struct {
 	Pieces   []MapPiece `json:"mapPieces"`
 	Type     string     `json:"type"`
 	Answers  []Solution `json:"answers"`
+	MapImg   string     `json:"mapImg"`
 }
 
 func (Hunt) TableName() string {
@@ -165,6 +167,16 @@ func UpdateMapClueList(db *gorm.DB) gin.HandlerFunc {
 func AddUserClue(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userSub := c.MustGet("user_id").(string)
+
+		clue := &Clue{ID: c.Param("id")}
+		db.Find(&clue)
+
+		hid, _ := strconv.Atoi(c.Param("huntid"))
+		if clue.HuntID != uint(hid) {
+			c.Status(http.StatusConflict)
+			return
+		}
+
 		u := &UserClue{UserID: userSub, ClueID: c.Param("id")}
 		db.Create(&u)
 		c.Status(http.StatusOK)
