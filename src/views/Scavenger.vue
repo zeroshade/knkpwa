@@ -302,7 +302,7 @@ export default class ScavengerView extends Vue {
     const huntId = this.huntList[this.huntStep - 1].id;
     if (this.guessOptions.every((val, i) => val.solution === solve[i].guess)) {
       this.foundText = (this.huntStep === 1)
-        ? 'Congrats! Now for Part II! Check the description for instructions!'
+        ? 'Congrats! Now for Part II!'
         : 'Success!';
 
       if (await this.addSolve({ huntId, solve })) {
@@ -310,6 +310,9 @@ export default class ScavengerView extends Vue {
         this.curStatus = solves;
         this.failedAttempts = attempts;
         this.huntStep += 1;
+        if (this.huntStep === 2) {
+          this.viewDesc = true;
+        }
       }
     } else {
       this.foundText = (this.huntStep === 1)
