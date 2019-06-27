@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -104,14 +105,94 @@ func (UserClue) TableName() string {
 	return "knk_user_clue"
 }
 
-type Solves struct {
-	UserID uint `gorm:"primary_key"`
-	HuntID uint `gorm:"primary_key"`
-	When   time.Time
+type Solve struct {
+	UserID string    `json:"-" gorm:"primary_key"`
+	HuntID uint      `json:"huntId" gorm:"primary_key;AUTO_INCREMENT:false"`
+	When   time.Time `json:"when"`
 }
 
-func (Solves) TableName() string {
-	return "knk_hunt_solved"
+func (Solve) TableName() string {
+	return "knk_hunt_solves"
+}
+
+type Attempt struct {
+  UserID string `json:"-" gorm:"primary_key"`
+  HuntID uint   `json:"huntId" gorm:"primary_key;AUTO_INCREMENT:false"`
+  Attempts uint `json:"attempts" gorm:"default:0;NOT NULL"`
+}
+
+func (Attempt) TableName() string {
+  return "knk_hunt_attempts"
+}
+
+func FailedAttempt(db *gorm.DB) gin.HandlerFunc {
+  return func(c *gin.Context) {
+    userSub := c.MustGet("user_id").(string)
+
+    hid, _ := strconv.Atoi(c.Param("huntid"))
+    var attempt Attempt
+    db.FirstOrCreate(&attempt, Attempt{UserID: userSub, HuntID: uint(hid)})
+
+    attempt.Attempts += 1
+    db.Save(&attempt)
+    c.Status(http.StatusOK)
+  }
+}
+
+func GetSolves(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userSub := c.MustGet("user_id").(string)
+
+		var solves []Solve
+		db.Order("`when` asc").Find(&solves, "user_id = ?", userSub)
+
+    var attempts []Attempt
+    db.Find(&attempts, "user_id = ?", userSub)
+
+		c.JSON(http.StatusOK, gin.H{"solves": solves, "attempts": attempts})
+	}
+}
+
+func CheckAndAddSolve(db *gorm.DB) gin.HandlerFunc {
+	type Guess struct {
+		Title string `json:"title" binding:"required"`
+		Guess uint   `json:"guess" binding:"required"`
+	}
+
+	return func(c *gin.Context) {
+		userSub := c.MustGet("user_id").(string)
+		var hunt Hunt
+		db.Preload("Answers").Find(&hunt, "id = ?", c.Param("huntid"))
+
+		var guesses []Guess
+		if err := c.ShouldBindJSON(&guesses); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		sort.Slice(hunt.Answers, func(i, j int) bool {
+			return hunt.Answers[i].Title < hunt.Answers[j].Title
+		})
+
+		for _, g := range guesses {
+			idx := sort.Search(len(hunt.Answers), func(i int) bool {
+				return hunt.Answers[i].Title >= g.Title
+			})
+
+			if hunt.Answers[idx].Title == g.Title {
+				if g.Guess != hunt.Answers[idx].Solution {
+					c.JSON(http.StatusBadRequest, gin.H{"error": "Wrong Answers!"})
+					return
+				}
+			} else {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Stop Trying to Cheat!"})
+				return
+			}
+		}
+
+		db.Create(&Solve{UserID: userSub, HuntID: hunt.ID, When: time.Now()})
+		c.Status(http.StatusOK)
+	}
 }
 
 func GetMapPieces(db *gorm.DB) gin.HandlerFunc {

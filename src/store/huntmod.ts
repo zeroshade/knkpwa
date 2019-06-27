@@ -1,6 +1,6 @@
 import { Module } from 'vuex';
 import { RootState } from './states';
-import { HuntInfo, Clue, IClue, MapPiece, Solution } from '@/api/hunt';
+import { HuntInfo, Clue, IClue, MapPiece, Solution, Solve, Attempt } from '@/api/hunt';
 
 const huntModule: Module<{}, RootState> = {
   namespaced: true,
@@ -48,7 +48,36 @@ const huntModule: Module<{}, RootState> = {
         method: 'GET',
       }, {root: true});
       return (await resp.json());
-    }
+    },
+    async addSolve({dispatch}, payload: {huntId: number, solve: Array<{title: string, guess: number}>}): Promise<boolean> {
+      const resp = await dispatch('auth/makeAuthedRequest', {
+        path: `/my/solved/${payload.huntId}`,
+        method: 'PUT',
+        body: payload.solve,
+      }, {root: true});
+      return resp.status === 200;
+    },
+    async getSolved({dispatch}): Promise<{solves: Solve[], attempts: {[index: number]: number}}> {
+      const resp = await dispatch('auth/makeAuthedRequest', {
+        path: '/my/solved',
+        method: 'GET',
+      }, {root: true});
+      const ret = (await resp.json());
+      return {
+        solves: ret.solves.map(
+          (o: {huntId: number, when: string}) => ({huntId: o.huntId, when: new Date(o.when)})),
+        attempts: ret.attempts.reduce((acc: {[index: number]: number}, cv: Attempt) => {
+          acc[cv.huntId] = cv.attempts;
+          return acc;
+        }, {}),
+      };
+    },
+    async failedAttempt({dispatch}, huntId: number): Promise<void> {
+      await dispatch('auth/makeAuthedRequest', {
+        path: `/my/failed/${huntId}`,
+        method: 'PUT',
+      }, {root: true});
+    },
   },
 };
 

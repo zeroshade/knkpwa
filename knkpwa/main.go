@@ -60,8 +60,8 @@ func main() {
 	}
 	defer db.Close()
 
-	db.AutoMigrate(&Subscription{}, &Schedule{}, &Event{}, &ColorMap{}, &Solution{},
-		&DraftEvent{}, &RoomOrdering{}, &Hunt{}, &Clue{}, &UserClue{}, &MapPiece{})
+	db.AutoMigrate(&Subscription{}, &Schedule{}, &Event{}, &ColorMap{}, &Solution{}, &Attempt{},
+		&DraftEvent{}, &RoomOrdering{}, &Hunt{}, &Clue{}, &UserClue{}, &MapPiece{}, &Solve{})
 	db.Model(&Clue{}).AddForeignKey("hunt_id", Hunt{}.TableName()+"(id)", "CASCADE", "RESTRICT")
 	db.Model(&UserClue{}).AddForeignKey("clue_id", Clue{}.TableName()+"(id)", "CASCADE", "RESTRICT")
 	db.Model(&MapPiece{}).AddForeignKey("hunt_id", MapPiece{}.TableName()+"(id)", "CASCADE", "RESTRICT")
@@ -97,6 +97,9 @@ func main() {
 	router.GET("/hunts/clue/:id", GetClue(db))
 	router.GET("/my/clues", checkJWT(), GetUserClueList(db))
 	router.PUT("/my/clues/:huntid/:id", checkJWT(), AddUserClue(db))
+  router.GET("/my/solved", checkJWT(), GetSolves(db))
+  router.PUT("/my/failed/:huntid", checkJWT(), FailedAttempt(db))
+  router.PUT("/my/solved/:huntid", checkJWT(), CheckAndAddSolve(db))
 	router.GET("/huntinfo", HuntInfo(db))
 	router.GET("/huntinfo/maps", GetMapPieces(db))
   router.GET("/huntinfo/guess/:id", checkJWT(), GetOptions(db))

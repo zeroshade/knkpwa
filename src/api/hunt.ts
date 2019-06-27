@@ -82,6 +82,16 @@ export interface Solution {
   huntId: number;
 }
 
+export interface Solve {
+  huntId: number;
+  when: Date;
+}
+
+export interface Attempt {
+  huntId: number;
+  attempts: number;
+}
+
 export class Hunt {
   public id: number = -1;
   public title: string = '';

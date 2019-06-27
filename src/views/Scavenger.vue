@@ -15,6 +15,9 @@
               <v-card class='mb-4'>
                 <v-card-title v-if='huntList.length > 0'>
                   <p class='title'>{{ hunt.title }}</p>
+                  <v-spacer />
+                  <countdown v-if='huntStep > 1' :date='deadline()'
+                    style='max-width: 300px' :size='40' :label-size='20'></countdown>
                 </v-card-title>
                 <v-toolbar card color='grey darken-2'>
                   <p class='mb-0 mt-1 ml-2 font-weight-light text-capitalize'>
@@ -61,6 +64,50 @@
               </v-card>
             </v-stepper-content>
             <v-stepper-content step='3'>
+              <v-card>
+                <v-card-text v-if='this.curStatus.length >= 2'>
+                  <div v-if='deadline() >= this.curStatus[1].when'>
+                    <p>You arrive just in time to evacuate your desperate crew. As you get them settled into
+                      sick bay, a <strong>Tal Shiar Bird of Prey</strong> drops out of hyperspace in orbit
+                      above the planet. Before you can return to the shuttle pod to recover your spoils, the
+                      <strong>Bird of Prey</strong> fires a pair of photon torpedos, destroying the wreckage.</p>
+
+                    <p><em>"Captain, they're hailing us."</em></p>
+
+                    <p><strong>Senator Cretak's</strong> imperious scowl appears on your viewscreen.</p>
+
+                    <p><em>"If the Romulan Empire cannot have the artifact, no one can. Now take your crew and
+                        leave, while I allow it."</em></p>
+
+                    <p>Not needing to be told twice, you order the <em>Spaceship KnK</em> to leave the
+                      <strong>B'Hala Cluster</strong> at top speed. As you gaze out your viewscreen at the
+                      triple-sunset of the <strong>B'Hala Cluster</strong> over the rapidly fading horizon
+                      of the <strong>4th planet</strong>, you contemplate how fortunate you are
+                      to have recovered your crew and your ship. You will live to see another adventure.</p>
+
+                    <p><strong><em>Congratulations!</em></strong> You have completed the KnK Planet X Marks The
+                      Hunt! You found {{ totalCluePerc }}% of the clues and finished with
+                      {{ round(((deadline() - this.curStatus[1].when) / 60000), 1) }} minutes
+                      left!</p>
+                  </div>
+                  <div v-else>
+                    <p>You arrive on the <strong>4th planet</strong> of the <strong>B'Hala Cluster</strong> only
+                      to encounter a <strong>Tal Shiar Bird of Prey</strong> decending on the crash site. You
+                      have arrived too late! After a pitched battle, you finally destroy the shields of the
+                      <strong>Romulan</strong> craft and send the <strong>Tal Shiar</strong> running, only to
+                      discover that your hyperspace interpolator was destroyed in the firefight. Your ship is
+                      incapable of leaving the planet's orbit</p>
+
+                    <p>You have found the <strong>lost treasure of Eav'oq</strong>, but it has cost you
+                      <em>everything</em>. You gaze in wonder at the beautiful triple-sunset afforded by the
+                      <strong>B'Hala Cluster</strong> as you and your reunited crew slowly succumb to radiation
+                      poisoning.</p>
+
+                    <p><strong><em>Congratulations!</em></strong> You have completed the KnK Planet X Marks The
+                      Hunt! You Found {{ totalCluePerc }}% of the clues and correctly solved the puzzle!</p>
+                  </div>
+                </v-card-text>
+              </v-card>
             </v-stepper-content>
           </v-stepper-items>
         </v-stepper>
@@ -84,6 +131,8 @@
         <v-card-title><p class='mb-0 title text-capitalize'>did you figure it out?</p></v-card-title>
         <v-divider />
         <v-card-text>
+          <p v-if='huntStep === 2'>Travelling between orbits requires an extended thruster burn, choose
+            carefully! A wrong guess will cost you an hour of travel time!</p>
           <v-list two-line>
             <v-list-tile v-for='(item, index) in guessOptions' :key='index'>
               <v-list-tile-content>
@@ -165,15 +214,17 @@
 <script lang='ts'>
 import { Component, Vue } from 'vue-property-decorator';
 import { QrcodeDropZone, QrcodeStream } from 'vue-qrcode-reader';
-import { Clue, Hunt, HuntInfo, MapPiece, Solution } from '@/api/hunt';
+import { Clue, Hunt, HuntInfo, MapPiece, Solution, Solve } from '@/api/hunt';
 import { Action } from 'vuex-class';
 import { isMobile } from 'mobile-device-detect';
 import { isUndefined } from 'util';
+import Countdown from '@/components/Countdown.vue';
 
 @Component({
   components: {
     QrcodeDropZone,
     QrcodeStream,
+    Countdown,
   },
 })
 export default class ScavengerView extends Vue {
@@ -183,6 +234,9 @@ export default class ScavengerView extends Vue {
   @Action('scavenger/addUserClue') public addUserClue!: (payload: {clueId: string, huntId: number}) => Promise<boolean>;
   @Action('scavenger/getMapPieceInfo') public getMapPieces!: () => Promise<MapPiece[]>;
   @Action('scavenger/getOptions') public getOptions!: (id: number) => Promise<Solution[]>;
+  @Action('scavenger/addSolve') public addSolve!: (payload: {huntId: number, solve: Array<{title: string, guess: number}>}) => Promise<boolean>;
+  @Action('scavenger/getSolved') public getSolved!: () => Promise<{ solves: Solve[], attempts: {[index: number]: number} }>;
+  @Action('scavenger/failedAttempt') public failed!: (huntId: number) => Promise<void>;
 
   public isDragging = false;
   public clueDialog = false;
@@ -201,6 +255,8 @@ export default class ScavengerView extends Vue {
   public guessOptions: Solution[] = [];
   public guesses: string[] = [];
   public cluePopup = false;
+  public curStatus: Solve[] = [];
+  public failedAttempts: {[index: number]: number} = {};
 
   public get viewClue(): Clue | null {
     if (this.active.length === 0) { return null; }
@@ -222,25 +278,54 @@ export default class ScavengerView extends Vue {
     return this.userClues.filter((c) => c.huntId === this.huntStep);
   }
 
+  public deadline(): Date {
+    const ret = new Date(this.curStatus[0].when);
+    let numHours = 3;
+
+    if (2 in this.failedAttempts) {
+      numHours -= this.failedAttempts[2];
+    }
+    ret.setTime(ret.getTime() + (numHours * 3600 * 1000));
+    return ret;
+  }
+
   public async openGuess() {
     this.guessOptions = await this.getOptions(this.huntStep);
     this.guesses = Array(this.guessOptions.length);
     this.guessDiag = true;
   }
 
-  public checkGuess() {
-    const solved =  this.guessOptions.every((val, i) => {
-      const guess = this.guesses[i];
-      return val.solution === val.options.findIndex((o) => o === guess);
-    });
+  public async checkGuess() {
+    const solve = this.guessOptions.map(
+      (val, i) => ({ title: val.title, guess: val.options.findIndex((o) => o === this.guesses[i]) }));
 
-    this.foundText = (solved) ? 'CORRECT!' : 'Sorry! Try Again!';
+    const huntId = this.huntList[this.huntStep - 1].id;
+    if (this.guessOptions.every((val, i) => val.solution === solve[i].guess)) {
+      this.foundText = (this.huntStep === 1)
+        ? 'Congrats! Now for Part II! Check the description for instructions!'
+        : 'Success!';
+
+      if (await this.addSolve({ huntId, solve })) {
+        const {solves, attempts} = await this.getSolved();
+        this.curStatus = solves;
+        this.failedAttempts = attempts;
+        this.huntStep += 1;
+      }
+    } else {
+      this.foundText = (this.huntStep === 1)
+        ? 'Sorry! Try Again!'
+        : 'You didn\'t find your crew. An hour was wasted departing the orbit, your time left has been updated.';
+
+      if (huntId in this.failedAttempts) {
+        this.failedAttempts[huntId] += 1;
+      } else {
+        this.failedAttempts[huntId] = 1;
+      }
+      this.failed(huntId);
+    }
+
     this.foundSnack = true;
     this.guessDiag = false;
-
-    if (solved) {
-      this.huntStep += 1;
-    }
   }
 
   public get checkInvalid(): boolean {
@@ -250,12 +335,20 @@ export default class ScavengerView extends Vue {
     return false;
   }
 
+  public round(val: number, dec: number): number {
+    console.log(val);
+    return Number(Math.round(Number(val+'e'+dec))+'e-'+dec);
+  }
+
   public async init() {
     this.userClues = await this.getUserClues();
     this.huntList = await this.getHuntList();
     this.getMapPieces().then((p) => {
       this.pieces = p;
     });
+    const {solves, attempts} = await this.getSolved();
+    this.curStatus = solves;
+    this.failedAttempts = attempts;
 
     for (const c of this.userClues) {
       const idx = this.huntList.findIndex((h) => h.id === c.huntId);
@@ -276,7 +369,7 @@ export default class ScavengerView extends Vue {
       }
     }
 
-
+    this.huntStep = this.curStatus.length + 1;
   }
 
   public async mounted() {
@@ -298,9 +391,10 @@ export default class ScavengerView extends Vue {
     }
   }
 
-  public percFound(h: HuntInfo): number {
-    const i = h.clues.reduce((acc, cv) => acc + ((cv.title !== '???') ? 1 : 0), 0);
-    return i / h.numClues * 100;
+  public get totalCluePerc(): number {
+    const total = this.huntList.reduce((acc: number, h: HuntInfo) => acc + h.numClues, 0);
+    console.log(total, this.userClues.length);
+    return this.round(this.userClues.length / total, 2);
   }
 
   public clueFound(id: string): boolean {
