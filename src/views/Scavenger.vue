@@ -65,6 +65,10 @@
             </v-stepper-content>
             <v-stepper-content step='3'>
               <v-card>
+                <v-card-title>
+                  <p class='headline mb-0 purple--text text--lighten-3'>Success!</p>
+                </v-card-title>
+                <v-divider />
                 <v-card-text v-if='this.curStatus.length >= 2'>
                   <div v-if='deadline() >= this.curStatus[1].when'>
                     <p>You arrive just in time to evacuate your desperate crew. As you get them settled into
