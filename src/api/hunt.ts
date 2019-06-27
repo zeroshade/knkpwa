@@ -61,6 +61,8 @@ export interface IHunt {
   mapPieces: MapPiece[];
   answers: Solution[];
   mapImg?: string;
+  mapHeight?: number;
+  mapWidth?: number;
 }
 
 interface NumClues {
@@ -93,8 +95,8 @@ export class Hunt {
   constructor(h?: IHunt) {
     if (!h) { return; }
 
-    const {id, title, desc, type, mapPieces, answers, mapImg} = h;
-    Object.assign(this, {id, title, desc, type, mapPieces, answers, mapImg});
+    const {id, title, desc, type, mapPieces, answers, mapImg, mapHeight, mapWidth} = h;
+    Object.assign(this, {id, title, desc, type, mapPieces, answers, mapImg, mapHeight, mapWidth});
 
     if (h.clues) {
       for (const c of h.clues) {

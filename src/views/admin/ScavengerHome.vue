@@ -17,7 +17,10 @@
           <v-dialog v-model='zoomimg' transition='scale-transition' lazy max-width='500'>
             <v-card>
               <div v-dragscroll style='width: 100%; height: 500px; overflow: hidden; cursor: grab;'>
-                <ul id='map' :style='{backgroundImage: `url("/img/${curHunt.mapImg}_complete.png")`}' style='width: 1500px; height: 875px;'>
+                <ul id='map' :style='{
+                  width: `${curHunt.mapWidth}px`,
+                  height: `${curHunt.mapHeight}px`,
+                  backgroundImage: `url("/img/${curHunt.mapImg}_complete.png")`}'>
                 </ul>
               </div>
             </v-card>

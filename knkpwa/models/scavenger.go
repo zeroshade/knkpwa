@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -13,14 +14,15 @@ import (
 )
 
 type Hunt struct {
-	ID       uint       `json:"id"`
-	Name     string     `json:"title" gorm:"type:varchar(100)" binding:"required"`
-	Descript string     `json:"desc" gorm:"type:text"`
-	Clues    []Clue     `json:"clues,omitempty"`
-	Pieces   []MapPiece `json:"mapPieces"`
-	Type     string     `json:"type"`
-	Answers  []Solution `json:"answers"`
-	MapImg   string     `json:"mapImg"`
+	ID        uint       `json:"id"`
+	Name      string     `json:"title" gorm:"type:varchar(100)" binding:"required"`
+	Descript  string     `json:"desc" gorm:"type:text"`
+	Clues     []Clue     `json:"clues,omitempty"`
+	Pieces    []MapPiece `json:"mapPieces"`
+	Answers   []Solution `json:"answers"`
+	MapImg    string     `json:"mapImg"`
+	MapHeight float32    `json:"mapHeight"`
+	MapWidth  float32    `json:"mapWidth"`
 }
 
 func (Hunt) TableName() string {
@@ -102,6 +104,16 @@ func (UserClue) TableName() string {
 	return "knk_user_clue"
 }
 
+type Solves struct {
+	UserID uint `gorm:"primary_key"`
+	HuntID uint `gorm:"primary_key"`
+	When   time.Time
+}
+
+func (Solves) TableName() string {
+	return "knk_hunt_solved"
+}
+
 func GetMapPieces(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var pieces []MapPiece
@@ -134,7 +146,7 @@ func HuntInfo(db *gorm.DB) gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 		var ret []Ret
-		db.Table(Hunt{}.TableName()).Select("id, name, descript, map_img, (?) as num_clues, (?) as num_maps",
+		db.Table(Hunt{}.TableName()).Select("id, name, descript, map_img, map_height, map_width, (?) as num_clues, (?) as num_maps",
 			db.Table(Clue{}.TableName()).Select("count(*)").Where("hunt_id = knkscavenger.id").QueryExpr(),
 			db.Table(MapPiece{}.TableName()).Select("count(*)").Where("hunt_id = knkscavenger.id").QueryExpr()).Find(&ret)
 		c.JSON(http.StatusOK, ret)
@@ -142,12 +154,12 @@ func HuntInfo(db *gorm.DB) gin.HandlerFunc {
 }
 
 func GetOptions(db *gorm.DB) gin.HandlerFunc {
-  return func(c *gin.Context) {
-    var hunt Hunt
-    db.Preload("Answers").Find(&hunt, "id = ?", c.Param("id"))
+	return func(c *gin.Context) {
+		var hunt Hunt
+		db.Preload("Answers").Find(&hunt, "id = ?", c.Param("id"))
 
-    c.JSON(http.StatusOK, hunt.Answers)
-  }
+		c.JSON(http.StatusOK, hunt.Answers)
+	}
 }
 
 func UpdateMapClueList(db *gorm.DB) gin.HandlerFunc {

@@ -28,40 +28,32 @@
                     <v-icon>camera_rear</v-icon>
                   </v-btn>
                 </v-toolbar>
-                <v-layout wrap>
-                  <v-flex>
-                    <v-card-text>
-                      <v-treeview
-                        activatable
-                        :active.sync='active'
-                        :items='[
-                          {title: "Clues Found (tap to see!)", children: curUserClues, id: "clues"},
-                          {title: "Map Pieces Revealed", children: piecesFound, id: "mapPieces"},
-                        ]'
-                        item-children='children'
-                        item-text='title'
-                        open-on-click>
-                        <template v-slot:append='{ item, leaf }'>
-                          <v-progress-circular v-if='!leaf'
-                            rotate='-90'
-                            color='blue'
-                            :value='perc(item)'>
-                            {{ perc(item) }}%
-                          </v-progress-circular>
-                        </template>
-                      </v-treeview>
-                    </v-card-text>
-                  </v-flex>
-                  <v-divider vertical />
-                  <v-flex xs12 md6>
-                    <v-card-text>
-                      <p v-if='viewClue' class='title'>Clue Text:</p>
-                      <p v-if='viewClue'>
-                        {{viewClue.text}}
+                <v-card-text>
+                  <v-treeview
+                    :items='[
+                      {title: "Clues Found (tap to see!)", children: curUserClues, id: "clues"},
+                      {title: "Map Pieces Revealed", children: piecesFound, id: "mapPieces"},
+                    ]'
+                    item-children='children'
+                    item-text='title'
+                    open-on-click>
+                    <template v-slot:append='{ item, leaf }'>
+                      <v-progress-circular v-if='!leaf'
+                        rotate='-90'
+                        color='blue'
+                        :value='perc(item)'>
+                        {{ perc(item) }}%
+                      </v-progress-circular>
+                    </template>
+                    <template v-slot:label='{ item, leaf }'>
+                      <span v-if='!leaf'>{{ item.title }}</span>
+                      <p v-else-if='!item.hasOwnProperty("left")'>
+                        <u @click='active = [item.id]; cluePopup = !cluePopup'>{{ item.title }}</u>
                       </p>
-                    </v-card-text>
-                  </v-flex>
-                </v-layout>
+                      <p v-else>{{ item.title }}</p>
+                    </template>
+                  </v-treeview>
+                </v-card-text>
                 <v-card-actions>
                   <v-spacer />
                   <v-btn @click='openGuess()'>Make A Guess!</v-btn>
@@ -74,6 +66,19 @@
         </v-stepper>
       </v-flex>
     </v-layout>
+    <v-dialog lazy v-model='cluePopup' max-width='500'>
+      <v-card v-if='viewClue'>
+        <v-card-title>
+          <p class='title text-capitalize mb-0'>{{ viewClue.title }}</p>
+          <v-spacer />
+          <v-btn icon small @click='cluePopup = !cluePopup'><v-icon>close</v-icon></v-btn>
+        </v-card-title>
+        <v-divider />
+        <v-card-text>
+          {{ viewClue.text }}
+        </v-card-text>
+      </v-card>
+    </v-dialog>
     <v-dialog lazy persistent v-model='guessDiag' max-width='400'>
       <v-card>
         <v-card-title><p class='mb-0 title text-capitalize'>did you figure it out?</p></v-card-title>
@@ -98,16 +103,27 @@
       <v-card>
         <v-card-title>
           <p class='title'>Hunt Description</p>
+          <v-spacer />
+          <v-btn icon @click='viewDesc = false'>
+            <v-icon>close</v-icon>
+          </v-btn>
         </v-card-title>
-        <v-card-text v-if='huntList.length > 0'>
+        <v-divider />
+        <v-card-text v-if='huntList.length > 0 && huntStep <= huntList.length'>
           {{ huntList[huntStep - 1].desc }}
         </v-card-text>
       </v-card>
     </v-dialog>
     <v-dialog lazy v-model='viewFull' max-width='500'>
-      <v-card v-if='huntList.length > 0'>
+      <v-card v-if='huntList.length > 0 && huntStep <= huntList.length'>
+        <v-btn class='mt-4' color='red darken-4' fab small top right absolute @click='viewFull = !viewFull'>
+          <v-icon>close</v-icon>
+        </v-btn>
         <div class='dragbox grab' style='width: 100%; height: 500px;' v-dragscroll>
-          <ul id='star_map' :style='{backgroundImage: `url("/img/${huntList[huntStep - 1].mapImg}.png")`}'>
+          <ul id='star_map' :style='{
+            width: `${huntList[huntStep - 1].mapWidth}px`,
+            height: `${huntList[huntStep - 1].mapHeight}px`,
+            backgroundImage: `url("/img/${huntList[huntStep - 1].mapImg}.png")`}'>
             <li v-for='p in piecesFound' :key='p.id'
               :style='getClueStyle(p)'
               :class='p.class'></li>
@@ -184,6 +200,7 @@ export default class ScavengerView extends Vue {
   public guessDiag = false;
   public guessOptions: Solution[] = [];
   public guesses: string[] = [];
+  public cluePopup = false;
 
   public get viewClue(): Clue | null {
     if (this.active.length === 0) { return null; }
@@ -222,7 +239,7 @@ export default class ScavengerView extends Vue {
     this.guessDiag = false;
 
     if (solved) {
-      this.huntStep = 2;
+      this.huntStep += 1;
     }
   }
 
@@ -236,6 +253,9 @@ export default class ScavengerView extends Vue {
   public async init() {
     this.userClues = await this.getUserClues();
     this.huntList = await this.getHuntList();
+    this.getMapPieces().then((p) => {
+      this.pieces = p;
+    });
 
     for (const c of this.userClues) {
       const idx = this.huntList.findIndex((h) => h.id === c.huntId);
@@ -256,7 +276,7 @@ export default class ScavengerView extends Vue {
       }
     }
 
-    this.pieces = await this.getMapPieces();
+
   }
 
   public async mounted() {
@@ -268,7 +288,7 @@ export default class ScavengerView extends Vue {
   }
 
   public perc(item: {id: string}): number {
-    if (this.huntList.length === 0) { return 0; }
+    if (this.huntList.length === 0 || this.huntStep > this.huntList.length) { return 0; }
     if (item.id === 'clues') {
       return Math.round(this.curUserClues.length / this.huntList[this.huntStep - 1].numClues * 100);
     } else if (item.id === 'mapPieces') {
@@ -292,7 +312,6 @@ export default class ScavengerView extends Vue {
   }
 
   public async onDecode(decoded: string) {
-    console.log(decoded);
     if (this.clueFound(decoded)) {
       this.foundText = 'You\'ve already found this one!!';
       this.active = [decoded];
@@ -344,8 +363,7 @@ export default class ScavengerView extends Vue {
   overflow hidden
 
 ul#star_map
-  width 1500px
-  height 725.47px
+
   background-size contain
   list-style none
   margin 0
