@@ -224,6 +224,16 @@ import { isMobile } from 'mobile-device-detect';
 import { isUndefined } from 'util';
 import Countdown from '@/components/Countdown.vue';
 
+interface Guess {
+  title: string;
+  guess: number;
+}
+
+interface SolveResponse {
+  solves: Solve[];
+  attempts: {[index: number]: number};
+}
+
 @Component({
   components: {
     QrcodeDropZone,
@@ -238,8 +248,8 @@ export default class ScavengerView extends Vue {
   @Action('scavenger/addUserClue') public addUserClue!: (payload: {clueId: string, huntId: number}) => Promise<boolean>;
   @Action('scavenger/getMapPieceInfo') public getMapPieces!: () => Promise<MapPiece[]>;
   @Action('scavenger/getOptions') public getOptions!: (id: number) => Promise<Solution[]>;
-  @Action('scavenger/addSolve') public addSolve!: (payload: {huntId: number, solve: Array<{title: string, guess: number}>}) => Promise<boolean>;
-  @Action('scavenger/getSolved') public getSolved!: () => Promise<{ solves: Solve[], attempts: {[index: number]: number} }>;
+  @Action('scavenger/addSolve') public addSolve!: (payload: {huntId: number, solve: Guess[]}) => Promise<boolean>;
+  @Action('scavenger/getSolved') public getSolved!: () => Promise<SolveResponse>;
   @Action('scavenger/failedAttempt') public failed!: (huntId: number) => Promise<void>;
 
   public isDragging = false;
@@ -274,7 +284,7 @@ export default class ScavengerView extends Vue {
 
   public get piecesFound(): MapPiece[] {
     return this.pieces.filter((p) => p.clues.length > 0 &&
-      p.clues.every((c: string) => -1 !== this.curUserClues.findIndex((uc) => uc.id === c))
+      p.clues.every((c: string) => -1 !== this.curUserClues.findIndex((uc) => uc.id === c)),
     );
   }
 
@@ -343,8 +353,7 @@ export default class ScavengerView extends Vue {
   }
 
   public round(val: number, dec: number): number {
-    console.log(val);
-    return Number(Math.round(Number(val+'e'+dec))+'e-'+dec);
+    return Number(Math.round(Number(val + 'e' + dec)) + 'e-' + dec);
   }
 
   public async init() {
@@ -383,10 +392,6 @@ export default class ScavengerView extends Vue {
     await this.init();
   }
 
-  public log(msg: string) {
-    console.log(msg);
-  }
-
   public perc(item: {id: string}): number {
     if (this.huntList.length === 0 || this.huntStep > this.huntList.length) { return 0; }
     if (item.id === 'clues') {
@@ -400,7 +405,6 @@ export default class ScavengerView extends Vue {
 
   public get totalCluePerc(): number {
     const total = this.huntList.reduce((acc: number, h: HuntInfo) => acc + h.numClues, 0);
-    console.log(total, this.userClues.length);
     return this.round(this.userClues.length / total, 2);
   }
 

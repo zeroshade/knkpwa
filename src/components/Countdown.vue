@@ -26,7 +26,7 @@ import { Component, Vue, Prop } from 'vue-property-decorator';
 
 @Component({
   filters: {
-    twoDigits(val: number): string { return val.toString().padStart(2, '0'); }
+    twoDigits(val: number): string { return val.toString().padStart(2, '0'); },
   },
 })
 export default class Countdown extends Vue {

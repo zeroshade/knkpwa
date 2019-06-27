@@ -2,6 +2,11 @@ import { Module } from 'vuex';
 import { RootState } from './states';
 import { HuntInfo, Clue, IClue, MapPiece, Solution, Solve, Attempt } from '@/api/hunt';
 
+interface Guess {
+  title: string;
+  guess: number;
+}
+
 const huntModule: Module<{}, RootState> = {
   namespaced: true,
   actions: {
@@ -49,7 +54,7 @@ const huntModule: Module<{}, RootState> = {
       }, {root: true});
       return (await resp.json());
     },
-    async addSolve({dispatch}, payload: {huntId: number, solve: Array<{title: string, guess: number}>}): Promise<boolean> {
+    async addSolve({dispatch}, payload: {huntId: number, solve: Guess[]}): Promise<boolean> {
       const resp = await dispatch('auth/makeAuthedRequest', {
         path: `/my/solved/${payload.huntId}`,
         method: 'PUT',

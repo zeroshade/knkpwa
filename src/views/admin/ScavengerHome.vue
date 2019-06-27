@@ -172,6 +172,11 @@ import { Hunt, MapPiece, Solution } from '@/api/hunt';
 import { State, Action } from 'vuex-class';
 import ClueTable from '@/components/admin/ClueTable.vue';
 
+interface AnswersPayload {
+  answers: Solution[];
+  id: number;
+}
+
 @Component({
   components: {
     ClueTable,
@@ -182,7 +187,7 @@ export default class ScavengerHome extends Vue {
   @State((state) => state.admin.scavenger.hunts) public hunts!: Hunt[];
   @Action('admin/scavenger/updateHunt') public updateHunt!: (h: Hunt) => Promise<void>;
   @Action('admin/scavenger/updateMapPieceClues') public updateMapPiece!: (m: MapPiece) => Promise<void>;
-  @Action('admin/scavenger/updateAnswers') public saveAnswers!: (payload: {answers: Solution[], id: number}) => Promise<void>;
+  @Action('admin/scavenger/updateAnswers') public saveAnswers!: (payload: AnswersPayload) => Promise<void>;
 
   public newTitle = '';
   public newDesc = '';
