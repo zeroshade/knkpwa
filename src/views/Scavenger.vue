@@ -184,7 +184,7 @@
         </div>
       </v-card>
     </v-dialog>
-    <v-snackbar v-model='foundSnack' top :timeout='20000'>
+    <v-snackbar v-model='foundSnack' top :timeout='20000' auto-height :vertical='mobile'>
       {{ foundText }}
       <v-btn color='pink' flat @click='foundSnack = false'>
         Close
