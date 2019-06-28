@@ -405,7 +405,7 @@ export default class ScavengerView extends Vue {
 
   public get totalCluePerc(): number {
     const total = this.huntList.reduce((acc: number, h: HuntInfo) => acc + h.numClues, 0);
-    return this.round(this.userClues.length / total, 2);
+    return this.round((this.userClues.length / total) * 100, 2);
   }
 
   public clueFound(id: string): boolean {
