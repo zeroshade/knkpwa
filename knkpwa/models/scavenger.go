@@ -35,7 +35,7 @@ type Solution struct {
 	Title     string   `json:"title" binding:"required"`
 	Solution  uint     `json:"solution" binding:"required"`
 	Options   []string `json:"options" gorm:"-" binding:"required"`
-	OptionSql string   `json:"-"`
+	OptionSql string   `json:"-" gorm:"type:text"`
 }
 
 func (Solution) TableName() string {
@@ -85,7 +85,7 @@ func (MapPiece) TableName() string {
 
 type Clue struct {
 	ID      string `json:"id" gorm:"primary_key;type:varchar(40)" binding:"required"`
-	Title   string `json:"title" gorm:"type:varchar(20)" binding:"required"`
+	Title   string `json:"title" gorm:"type:varchar(50)" binding:"required"`
 	Text    string `json:"text" gorm:"type:text" binding:"required"`
 	HuntID  uint   `json:"huntId" binding:"required"`
 	BgColor string `json:"bgColor" gorm:"type:varchar(7)"`
@@ -116,27 +116,27 @@ func (Solve) TableName() string {
 }
 
 type Attempt struct {
-  UserID string `json:"-" gorm:"primary_key"`
-  HuntID uint   `json:"huntId" gorm:"primary_key;AUTO_INCREMENT:false"`
-  Attempts uint `json:"attempts" gorm:"default:0;NOT NULL"`
+	UserID   string `json:"-" gorm:"primary_key"`
+	HuntID   uint   `json:"huntId" gorm:"primary_key;AUTO_INCREMENT:false"`
+	Attempts uint   `json:"attempts" gorm:"default:0;NOT NULL"`
 }
 
 func (Attempt) TableName() string {
-  return "knk_hunt_attempts"
+	return "knk_hunt_attempts"
 }
 
 func FailedAttempt(db *gorm.DB) gin.HandlerFunc {
-  return func(c *gin.Context) {
-    userSub := c.MustGet("user_id").(string)
+	return func(c *gin.Context) {
+		userSub := c.MustGet("user_id").(string)
 
-    hid, _ := strconv.Atoi(c.Param("huntid"))
-    var attempt Attempt
-    db.FirstOrCreate(&attempt, Attempt{UserID: userSub, HuntID: uint(hid)})
+		hid, _ := strconv.Atoi(c.Param("huntid"))
+		var attempt Attempt
+		db.FirstOrCreate(&attempt, Attempt{UserID: userSub, HuntID: uint(hid)})
 
-    attempt.Attempts += 1
-    db.Save(&attempt)
-    c.Status(http.StatusOK)
-  }
+		attempt.Attempts += 1
+		db.Save(&attempt)
+		c.Status(http.StatusOK)
+	}
 }
 
 func GetSolves(db *gorm.DB) gin.HandlerFunc {
@@ -146,8 +146,8 @@ func GetSolves(db *gorm.DB) gin.HandlerFunc {
 		var solves []Solve
 		db.Order("`when` asc").Find(&solves, "user_id = ?", userSub)
 
-    var attempts []Attempt
-    db.Find(&attempts, "user_id = ?", userSub)
+		var attempts []Attempt
+		db.Find(&attempts, "user_id = ?", userSub)
 
 		c.JSON(http.StatusOK, gin.H{"solves": solves, "attempts": attempts})
 	}
