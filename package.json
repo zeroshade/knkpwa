@@ -15,7 +15,7 @@
     "goserve": "set PORT=8090 && knkpwa"
   },
   "dependencies": {
-    "auth0-js": "^9.10.0",
+    "auth0-js": "^9.13.2",
     "material-design-icons-iconfont": "^3.0.3",
     "mobile-device-detect": "^0.2.3",
     "moment": "^2.24.0",
